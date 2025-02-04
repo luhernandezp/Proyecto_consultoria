@@ -1,0 +1,116 @@
+---
+title: "Informe Consultoria"
+author: "Luis Hernández y Juan Carvajal"
+format: pdf
+editor: visual
+
+---
+
+
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(tidyverse)
+library(readxl)
+library(janitor)
+```
+
+```{r}
+#| echo: false
+
+
+# cargando la base de datos
+bd <- read_excel("BDD.Análisis_PD-L1_26-09-2024.xlsx", sheet = "BD_330")
+
+# limpiando los nombres de las variables
+
+bd <- clean_names(bd)
+```
+
+
+
+
+```{r}
+#| echo: false
+
+
+# convirtiendo variables tipo factor
+bd$codigo <- as.factor(bd$codigo)
+bd$estado_vital_5años <- as.factor(bd$estado_vital_5anos)
+bd$estado_vital_2 <- as.factor(bd$estado_vital_2)
+bd$ciudad <- as.factor(bd$ciudad)
+bd$edad_cat <- as.factor(bd$edad_cat)
+bd$edad_cat2 <- as.factor(bd$edad_cat2)
+bd$estrato <- as.factor(bd$estrato)
+bd$estrato_cat <- as.factor(bd$estrato_cat)
+bd$educacion <- as.factor(bd$educacion)
+bd$educacion_cat <- as.factor(bd$educacion_cat)
+bd$afiliacion <- as.factor(bd$afiliacion)
+bd$lateralidad_cat <- as.factor(bd$lateralidad_cat)
+bd$tipo_histologico <- as.factor(bd$tipo_histologico)
+bd$tipo_histol_cat <- as.factor(bd$tipo_histol_cat)
+bd$grado_histologico <- as.factor(bd$grado_histologico)
+bd$grado_nuclear <- as.factor(bd$grado_nuclear)
+bd$gh_gn <- as.factor(bd$gh_gn)
+bd$t <- as.factor(bd$t)
+bd$n <- as.factor(bd$n)
+bd$m <- as.factor(bd$m)
+bd$estadio <- as.factor(bd$estadio)
+bd$estadio_cat <- as.factor(bd$estadio_cat)
+bd$estadio_cat3 <- as.factor(bd$estadio_cat3)
+bd$estadio_early_late <- as.factor(bd$estadio_early_late)
+bd$er <- as.factor(bd$er)
+bd$pr <- as.factor(bd$pr)
+bd$her2 <- as.factor(bd$her2)
+bd$subtipo_molecular_definitivo <- as.factor(bd$subtipo_molecular_definitivo)
+bd$eur_cat <- as.factor(bd$eur_cat)
+bd$nam_cat <- as.factor(bd$nam_cat)
+bd$afr_cat <- as.factor(bd$afr_cat)
+bd$recaidas <- as.factor(bd$recaidas)
+bd$ano_dx <- as.factor(bd$ano_dx)
+bd$cuartil_fecha_dx <- as.factor(bd$cuartil_fecha_dx)
+bd$pd_l1 <- as.factor(bd$pd_l1)
+bd$interaccion_reg_stage <- as.factor(bd$interaccion_reg_stage)
+```
+
+
+
+
+
+# Análisis Descriptivo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

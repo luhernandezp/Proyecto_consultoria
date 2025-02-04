@@ -73,12 +73,18 @@ cramerV_matrix <- function(data) {
     for (j in 1:n) {
       if(i==j){
         mat[i,j] <- 1
-     }else{
+      }else if (is.nan(cramerV(data[[i]],data[[j]]))) {
+        mat[i,j] <-- 0
+      }else{
         mat[i, j] <- cramerV(data[[i]], data[[j]])
       }
     }
   }
   return(mat)
 }
+
+corrplot(cramerV_matrix(Datos1),method = "circle",type = "upper")
+
+
 
 

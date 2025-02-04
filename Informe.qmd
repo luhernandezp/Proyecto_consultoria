@@ -95,6 +95,11 @@ bd$interaccion_reg_stage <- as.factor(bd$interaccion_reg_stage)
 
 
 
+# Análisis de Supervivencia
+
+
+
+
 
 
 

@@ -140,8 +140,6 @@ Datos$`PD-L1` <- as.factor(Datos$`PD-L1`)
 Datos$`Interacción_Reg/stage` <- as.factor(Datos$`Interacción_Reg/stage`)
 ```
 
-
-
 # Análisis Descriptivo
 
 ## Correlaciones entre las variables

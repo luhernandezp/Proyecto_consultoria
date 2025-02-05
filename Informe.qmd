@@ -1,6 +1,7 @@
 ---
 title: "Informe Consultoria"
 author: "Luis Hernández y Juan Carvajal"
+date: "`r Sys.Date()`"
 format: pdf
 editor: visual
 ---
@@ -50,9 +51,54 @@ bd <- read_excel("BDD.Análisis_PD-L1_26-09-2024.xlsx", sheet = "BD_330")
 
 bd <- clean_names(bd)
 
-
 bd <- bd[,-1]
 ```
+
+
+
+```{r}
+#| label: tbl-fal
+#| echo: false
+#| tbl-cap: Valores faltantes para cada variable
+apply(is.na(bd), 2, sum) |> kable(col.names = c("Variables",
+                                                 "Valores faltantes"),
+                                   align = c('c'))
+```
+
+
+
+
+De la @tbl-fal podemos concluir que:
+
+**Variables sin valores faltantes**
+
+Muchas variables clave no tienen datos faltantes, lo que indica una base de datos bien estructurada en su mayoría. Ejemplos:
+
+- `estado_vital_5anos`
+- `estado_vital_2`
+- `tiempo_evento_bx_5anos`
+- `edad`, `ciudad`, `afiliacion`, `fecha_dx`, `tiempo_supervivencia_dias`, etc.
+
+**Variables con algunos valores faltantes**
+
+Algunas variables presentan valores faltantes moderados (menores a 20 casos), lo que puede impactar el análisis dependiendo de la variable. Ejemplos:
+
+- `grado_histologico` (31 valores faltantes)
+- `t` (15), `n` (16), `m` (9)
+- `estadio` (15), `er` (10), `pr` (11), `her2` (13)
+- `subtipo_molecular_definitivo` (10)
+
+**Variables con muchos valores faltantes**
+
+Algunas variables tienen un número considerable de datos faltantes, lo que puede representar un problema para el análisis. Ejemplos:
+
+- `recaidas` (131 valores faltantes)
+- `pd_l1` (191)
+- `area_ocupada_por_los_ti_ls_estromales_percent_total` (139)
+
+
+
+
 
 ```{r}
 #| echo: false

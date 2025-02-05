@@ -307,6 +307,8 @@ Para las curvas de supervivencia utilizaremos el estimador de Kaplan-Meier.
 
 ```{r}
 #| echo: false
+#| label: tbl-encabezado
+#| tbl-cap: "Primeros registros"
 bd |> select(estado_vital_5anos, tiempo_supervivencia_dias) |> head() |>
   kable(align = c('cc'))
 ```
@@ -374,7 +376,7 @@ En las situaciones experimentales en las que deseamos estudiar la supervivencia 
 
 El modelo más habitual en esta situación es el **modelo hazard proporcional** que separa en dos componentes la función hazard, una correspondiente al tiempo de supervivencia y otra a las variables predictoras.La finalidad de este modelo es para identificar factores que influyen en la supervivencia.
 
-A manera de ejemplo se ajustara un modelo con algunas variables, las variables a cosiderar al modelo final, y se tranda en cuenta tambien el criterio de Akaike.
+A manera de ejemplo se ajustara un modelo con algunas variables, las variables a cosiderar al modelo final, y se trenda en cuenta tambien el criterio de Akaike.
 
 ```{r}
 #| echo: false
@@ -390,7 +392,34 @@ summary(modelo)
 
 
 
+Se realizó un modelo de regresión de Cox para evaluar el impacto de diversas variables sobre la supervivencia a 5 años en una muestra de 330 individuos, de los cuales 70 fallecieron durante el seguimiento. Los principales hallazgos son los siguientes:
 
+\begin{itemize}
+    \item \textbf{Impacto de la Ciudad:} Se encontró que la ciudad de residencia es un factor significativamente asociado con la supervivencia:
+    \begin{itemize}
+        \item Ciudad 1: \textit{HR} = 2.79, $p = 0.003$, IC 95\% (1.41 - 5.50).
+        \item Ciudad 2: \textit{HR} = 3.33, $p = 0.0007$, IC 95\% (1.66 - 6.71).
+    \end{itemize}
+    Esto sugiere que los individuos en estas ciudades tienen un riesgo significativamente mayor de mortalidad en comparación con la ciudad de referencia.
+
+  \item \textbf{Edad y Supervivencia:} No se encontró evidencia estadísticamente significativa de que la edad, categorizada en diferentes grupos, tenga un efecto claro sobre la supervivencia ($p > 0.05$).
+
+  \item \textbf{Estrato Socioeconómico:} Aunque el estrato socioeconómico mostró una tendencia hacia la significancia:
+    \begin{itemize}
+        \item Estrato 2: \textit{HR} = 3.86, $p = 0.078$, IC 95\% (0.86 - 17.47).
+    \end{itemize}
+    su intervalo de confianza amplio y su valor de $p$ indican que la relación no es concluyente.
+
+  \item \textbf{Educación y Afiliación al Sistema de Salud:} No se encontró una asociación estadísticamente significativa entre el nivel educativo o la afiliación al sistema de salud y la supervivencia ($p > 0.05$).
+
+  \item \textbf{Rendimiento del Modelo:} 
+    \begin{itemize}
+        \item Índice de concordancia (\textit{C-index}) = 0.678, lo que indica una capacidad moderada del modelo para predecir la supervivencia.
+        \item Pruebas globales del modelo (Likelihood Ratio, Wald, Score) mostraron $p< 0.01$, indicando que al menos una variable del modelo es significativa.
+    \end{itemize}
+\end{itemize}
+
+La ciudad de residencia es el factor más influyente en la supervivencia a 5 años, con un aumento del riesgo de muerte de hasta 3.33 veces en comparación con la ciudad de referencia. Se recomienda explorar factores adicionales, como características clínicas y biomarcadores, para mejorar la capacidad predictiva del modelo.
 
 
 

@@ -101,3 +101,12 @@ for (var in variables) {
   Datos1[[var]] %>% table() %>% barplot(xlab = 'Categorias',main = paste("Grafico de barras de",var),
                                         col = brewer.pal(n = nlevels(Datos1[[var]]), name = "Blues"))
 }
+
+
+##----------------- Análisis descriptivo de vvaraibles en conjunto------------##
+for (i in 1:length(variables)-1){
+  plot(Datos1[[i+1]],Datos1$estado_vital_5años,xlab=variables[i+1],ylab='estado_vital_5años',
+       col=c("#99cc99", "#cc9999", "#9999cc"),main= paste("Mosaico variable estado_vital_5_años y ",
+                                                          variables[i+1]))
+ }
+

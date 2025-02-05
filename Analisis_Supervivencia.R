@@ -5,6 +5,7 @@ require(tidyverse)
 require(ggplot2)
 require(vcd)
 require(corrplot)
+require(RColorBrewer)
 
 
 #------------------------------------------------------------------------------#
@@ -85,6 +86,18 @@ cramerV_matrix <- function(data) {
 
 corrplot(cramerV_matrix(Datos1),method = "circle",type = "upper")
 
+#----Análisis descriptivos de las variables mas relevantes con la respuesta----#
+
+variables <- c('estado_vital_5años','estado_vital_2','ciudad','estrato','T','afiliacion',
+               'tipo_histologico','T','N','M','estadio','estadio_cat','estadio_cat3',
+               'estadio-Early_late','ER','PR','subtipo_molecular_definitivo','recaidas',
+               'Interacción_Reg/stage')
+
+##---------------------- variables individuales ------------------------------##
 
 
-
+# Bucle para crear un gráfico de barras por variable
+for (var in variables) {
+  Datos1[[var]] %>% table() %>% barplot(xlab = 'Categorias',main = paste("Grafico de barras de",var),
+                                        col = brewer.pal(n = nlevels(Datos1[[var]]), name = "Blues"))
+}

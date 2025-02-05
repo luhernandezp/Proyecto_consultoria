@@ -359,3 +359,15 @@ modelo <- coxph(Surv(tiempo_supervivencia_dias,estado_vital_5anos==1) ~ ciudad+
               data = bd)
 summary(modelo)
 ```
+
+
+
+
+
+
+
+
+
+
+
+

@@ -96,7 +96,6 @@ bd$pd_l1 <- as.factor(bd$pd_l1)
 bd$interaccion_reg_stage <- as.factor(bd$interaccion_reg_stage)
 ```
 
-
 ```{r}
 #| include: false
 #| echo: false
@@ -143,18 +142,9 @@ Datos$`Interacción_Reg/stage` <- as.factor(Datos$`Interacción_Reg/stage`)
 
 
 
-
-
-
-
-
-
-
-
-
 # Análisis Descriptivo
 
-## Correlaciones entre las variables 
+## Correlaciones entre las variables
 
 ```{r}
 #| echo: false
@@ -234,36 +224,17 @@ for (i in 1:length(variables)-1){
  }
 ```
 
-
-
-
-
-
-
-
-
-
-
-
 # Análisis de Supervivencia
-
 
 Para las curvas de supervivencia utilizaremos el estimador de Kaplan-Meier.
 
-
-
-
 ## Estimador de Kaplan-Meier.
-
 
 ```{r}
 #| echo: false
 bd |> select(estado_vital_5anos, tiempo_supervivencia_dias) |> head() |>
   kable(align = c('cc'))
 ```
-
-
-
 
 ```{r}
 #| include: false
@@ -275,15 +246,6 @@ cancer_km <- survfit(Surv(tiempo_supervivencia_dias,
 
 cancer_km |> summary()
 ```
-
-
-
-
-
-
-
-
-
 
 ```{r}
 #| echo: false
@@ -299,11 +261,6 @@ ggsurvplot(fit = cancer_km, data = bd,
            ggtheme = theme_minimal())
 ```
 
-
-
-
-
-
 ```{r}
 #| include: false
 cancer.km <- survfit(Surv(tiempo_supervivencia_dias,
@@ -313,10 +270,6 @@ cancer.km <- survfit(Surv(tiempo_supervivencia_dias,
 
 cancer.km |> summary()
 ```
-
-
-
-
 
 ```{r}
 #| echo: false
@@ -333,9 +286,6 @@ ggsurvplot(fit = cancer.km, data = bd, conf.int = T,
 
 ```
 
-
-
-
 ```{r}
 #| echo: false
 survdiff(Surv(tiempo_supervivencia_dias,
@@ -343,27 +293,13 @@ survdiff(Surv(tiempo_supervivencia_dias,
          data = bd, rho = 0) 
 ```
 
-
-
-
-
-
-
-
-
-
 ## Modelo de Riesgos Proporcionales de Cox
 
 En las situaciones experimentales en las que deseamos estudiar la supervivencia de un conjunto de sujetos en función de un conjunto $X = (X_1, \ldots, X_p)$ de variables predictoras, es decir, variables que pueden afectar o caracterizar su supervivencia, es necesario establecer modelos estadísticos capaces de analizar dichas relaciones. La construcción de este tipo de modelos que depende del tiempo y de las predictoras se hace a través del análisis de la función hazard asociada $h(t; X)$.
 
-
 El modelo más habitual en esta situación es el **modelo hazard proporcional** que separa en dos componentes la función hazard, una correspondiente al tiempo de supervivencia y otra a las variables predictoras.La finalidad de este modelo es para identificar factores que influyen en la supervivencia.
 
-
 A manera de ejemplo se ajustara un modelo con algunas variables, las variables a cosiderar al modelo final, y se tranda en cuenta tambien el criterio de Akaike.
-
-
-
 
 ```{r}
 #| echo: false
@@ -373,9 +309,3 @@ modelo <- coxph(Surv(tiempo_supervivencia_dias,estado_vital_5anos==1) ~ ciudad+
               data = bd)
 summary(modelo)
 ```
-
-
-
-
-
-

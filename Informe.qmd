@@ -15,17 +15,17 @@ editor: visual
 library(tidyverse)
 library(readxl)
 library(janitor)
-<<<<<<< Updated upstream
+
 require(magrittr)
 require(ggplot2)
 require(vcd)
 require(corrplot)
 require(RColorBrewer)
-=======
+
 library(knitr)
 library(kableExtra)
 
-#================================
+
 
 
 library(survival)
@@ -36,7 +36,7 @@ library(ggfortify)
 library(flexsurv)
 library(actuar)
 library(dplyr)
->>>>>>> Stashed changes
+
 ```
 
 ```{r}
@@ -157,9 +157,10 @@ Datos$`Interacción_Reg/stage` <- as.factor(Datos$`Interacción_Reg/stage`)
 ## Correlaciones entre las variables 
 
 ```{r}
-#| fig-width: 10
-#| fig-height: 15
+#| echo: false
 #| fig-align: center
+#| fig-height: 15
+#| fig-width: 10
 # Mirar correlaciones entre las variables
 
 # Función para calcular Cramer's V entre dos variables
@@ -195,10 +196,11 @@ corrplot(cramerV_matrix(Datos1),method = "circle",type = "upper")
 ## Analisis descritivos de variables individuales
 
 ```{r}
+#| echo: false
+#| warning: false
 #| fig-align: center
 #| layout-ncol: 4
 #| layout-nrow: 5
-#| warning: false
 
 # Análisis descriptivos de las variables mas relevantes con la respuesta
 
@@ -218,6 +220,7 @@ for (var in variables) {
 ## Analisis descriptivo de variables en conjunto
 
 ```{r}
+#| echo: false
 #| fig-aling: center
 #| layout-ncol: 4
 #| layout-nrow: 5
@@ -354,16 +357,13 @@ survdiff(Surv(tiempo_supervivencia_dias,
 En las situaciones experimentales en las que deseamos estudiar la supervivencia de un conjunto de sujetos en función de un conjunto $X = (X_1, \ldots, X_p)$ de variables predictoras, es decir, variables que pueden afectar o caracterizar su supervivencia, es necesario establecer modelos estadísticos capaces de analizar dichas relaciones. La construcción de este tipo de modelos que depende del tiempo y de las predictoras se hace a través del análisis de la función hazard asociada $h(t; X)$.
 
 
-
-
-
 El modelo más habitual en esta situación es el **modelo hazard proporcional** que separa en dos componentes la función hazard, una correspondiente al tiempo de supervivencia y otra a las variables predictoras.La finalidad de este modelo es para identificar factores que influyen en la supervivencia.
 
 
 A manera de ejemplo se ajustara un modelo con algunas variables, las variables a cosiderar al modelo final, y se tranda en cuenta tambien el criterio de Akaike.
 
 
-\newpage
+
 
 ```{r}
 #| echo: false
@@ -378,4 +378,4 @@ summary(modelo)
 
 
 
->>>>>>> Stashed changes
+

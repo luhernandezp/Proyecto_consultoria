@@ -93,10 +93,6 @@ Algunas variables tienen un número considerable de datos faltantes, lo que pued
 - `pd_l1` (191)
 - `area_ocupada_por_los_ti_ls_estromales_percent_total` (139)
 
-
-
-
-
 ```{r}
 #| echo: false
 
@@ -185,12 +181,34 @@ Datos$`Interacción_Reg/stage` <- as.factor(Datos$`Interacción_Reg/stage`)
 
 # Análisis Descriptivo
 
+Para obtener correlaciones entre variables categóricas se utilizó el **coeficiente de correlación de Cramer's V**,a continuación se da una breve introducción.
+
+El coeficiente de correlación de Cramer's V es una medida de asociación entre dos variables categóricas. Es especialmente útil cuando las variables tienen más de dos categorías (politómicas) y no son ordinales (es decir, no tienen un orden inherente). Cramer's V se basa en la prueba de chi-cuadro ($X^2$) y es una extensión del coeficiente phi ($\varnothing$),que se usa para tablas de contingencia de 2x2.
+
+Cramer's V cuantifica la fuerza de la asociación entre dos variables categóricas. Su valor oscila entre 0 y 1:
+
+- 0: Indica que no hay asociación entre las variables (son independientes).
+- 1: Indica una asociación perfecta (las variables están completamente relacionadas).
+
+Cramer's V se calcula a partir de la prueba de chi-cuadrado ($X^2$) y ajusta el tamaño de la tabla de contingencia. La fórmula es:
+
+$$
+V=\sqrt{\frac{x^2}{n.min(r-1,c-1)}}
+$$
+Donde:
+
+- $X^2:$Es el valor de la prueba de chi-cuadrado.
+- $n$:Es el número total de observaciones
+- $r$:Es el numero de filas de la tabla de contingencia.
+- $c:$Es el numero de columnas de la tabla de contingencia.
+- $min(r-1,c-1):$Es el minimo entre el numero de filas menos 1 y el numero de columnas menos 1.
+
 ## Correlaciones entre las variables
 
 ```{r}
 #| echo: false
 #| fig-align: center
-#| fig-height: 6
+#| fig-height: 6.5
 #| fig-width: 8
 
 
@@ -226,6 +244,8 @@ cramerV_matrix <- function(data) {
 corrplot(cramerV_matrix(Datos1),method = "circle",type = "upper")
 ```
 
+La matriz de correlación presentada muestra las relaciones entre las variables categóricas de nuestra base de datos. Dado que el objetivo del estudio es determinar el estado vital a cinco años en mujeres con cáncer de mama utilizando variables predictoras categóricas, analizamos cuáles se relacionan mejor con la variable de respuesta. Además, identificamos aquellas variables predictoras con altas correlaciones entre sí. Estas correlaciones nos permiten, como primer paso, seleccionar variables para evaluar su comportamiento tanto de manera individual como en conjunto con la variable de respuesta.
+
 \newpage
 
 ## Análisis descriptivos de variables individuales
@@ -253,6 +273,8 @@ for (var in variables) {
 }
 ```
 
+En los diagramas de barras presentados, podemos observar las frecuencias de los distintos niveles de cada variable predictora. Un aspecto relevante que notamos es que, en su mayoría, las variables categóricas analizadas presentan entre dos y tres niveles, mientras que solo unas pocas tienen más de tres categorías. Este patrón sugiere que las variables con un menor número de niveles podrían ser más fáciles de interpretar y modelar en relación con la variable de respuesta. Además, hemos identificado que aquellas variables con tres o menos factores tienden a mostrar una mejor correlación con la respuesta, lo que indica su posible relevancia en el estudio. Esto nos permite enfocar el análisis en estas variables, explorando su impacto tanto de manera individual como en combinación con otras, con el objetivo de mejorar la capacidad predictiva del modelo.
+
 \newpage
 
 ## Análisis descriptivo de variables en conjunto con la respuesta 
@@ -271,6 +293,9 @@ for (i in 1:(length(variables)-1)){
                                                           variables[i+1]))
  }
 ```
+
+
+Para finalizar el análisis descriptivo, observamos cómo se relacionan los niveles de las variables predictoras más influyentes con los niveles de la variable de respuesta. Los gráficos de mosaico muestran, de manera visual, la frecuencia con la que los distintos niveles de la variable de respuesta coinciden con cada una de las categorías de las variables predictoras. Esto nos permite identificar patrones en la distribución de los datos y evaluar posibles asociaciones entre las variables, lo que será útil para el análisis posterior.
 
 \newpage
 

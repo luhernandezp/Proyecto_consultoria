@@ -140,8 +140,6 @@ Datos$`PD-L1` <- as.factor(Datos$`PD-L1`)
 Datos$`Interacción_Reg/stage` <- as.factor(Datos$`Interacción_Reg/stage`)
 ```
 
-
-
 # Análisis Descriptivo
 
 ## Correlaciones entre las variables
@@ -150,7 +148,7 @@ Datos$`Interacción_Reg/stage` <- as.factor(Datos$`Interacción_Reg/stage`)
 #| echo: false
 #| fig-align: center
 #| fig-height: 15
-#| fig-width: 10
+#| fig-width: 8
 # Mirar correlaciones entre las variables
 
 # Función para calcular Cramer's V entre dos variables

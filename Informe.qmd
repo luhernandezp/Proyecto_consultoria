@@ -25,9 +25,6 @@ require(RColorBrewer)
 library(knitr)
 library(kableExtra)
 
-
-
-
 library(survival)
 library(KMsurv)
 library(survMisc)
@@ -147,8 +144,10 @@ Datos$`Interacción_Reg/stage` <- as.factor(Datos$`Interacción_Reg/stage`)
 ```{r}
 #| echo: false
 #| fig-align: center
-#| fig-height: 15
+#| fig-height: 6
 #| fig-width: 8
+
+
 # Mirar correlaciones entre las variables
 
 # Función para calcular Cramer's V entre dos variables
@@ -181,7 +180,9 @@ cramerV_matrix <- function(data) {
 corrplot(cramerV_matrix(Datos1),method = "circle",type = "upper")
 ```
 
-## Analisis descritivos de variables individuales
+\newpage
+
+## Análisis descriptivos de variables individuales
 
 ```{r}
 #| echo: false
@@ -189,11 +190,12 @@ corrplot(cramerV_matrix(Datos1),method = "circle",type = "upper")
 #| fig-align: center
 #| layout-ncol: 4
 #| layout-nrow: 5
+#| fig-height: 3
 
 # Análisis descriptivos de las variables mas relevantes con la respuesta
 
 variables <- c('estado_vital_5años','estado_vital_2','ciudad','estrato','T','afiliacion','tipo_histologico','T','N','M','estadio','estadio_cat','estadio_cat3',
-               'estadio-Early_late','ER','PR','subtipo_molecular_definitivo','recaidas',
+               'estadio-Early_late','ER','PR','subtipo_molecular_definitivo','EUR_cat','NAM_cat','AFR_cat','recaidas',
                'Interacción_Reg/stage')
 
 # variables individuales
@@ -205,7 +207,9 @@ for (var in variables) {
 }
 ```
 
-## Analisis descriptivo de variables en conjunto
+\newpage
+
+## Análisis descriptivo de variables en conjunto con la respuesta 
 
 ```{r}
 #| echo: false
@@ -215,12 +219,14 @@ for (var in variables) {
 
 # Análisis descriptivo de vvaraibles en conjunto
 
-for (i in 1:length(variables)-1){
+for (i in 1:(length(variables)-1)){
   plot(Datos1[[i+1]],Datos1$estado_vital_5años,xlab=variables[i+1],ylab='estado_vital_5años',
        col=c("#99cc99", "#cc9999", "#9999cc"),main= paste("Mosaico variable estado_vital_5_años y ",
                                                           variables[i+1]))
  }
 ```
+
+\newpage
 
 # Análisis de Supervivencia
 

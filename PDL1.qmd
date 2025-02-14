@@ -1,0 +1,150 @@
+---
+title: "Análisis Descriptivo PD-L1"
+format: pdf
+editor: source
+
+execute:
+  warning: false
+  cache: true
+---
+
+```{r}
+#| echo: false
+library(readxl)
+library(janitor)
+library(tidyverse)
+library(magrittr)
+library(DescTools)
+library(kableExtra)
+```
+
+```{r}
+#| echo: false
+datos <- read_excel("BDD.Análisis_PD-L1_26-09-2024.xlsx")
+datos <- clean_names(datos)
+
+# =======================================================
+
+
+datos$pd_l1 %<>% as.factor()
+datos$ciudad %<>% as.factor()
+datos$educacion %<>% as.factor()
+datos$estrato %<>% as.factor()
+datos$afiliacion %<>% as.factor()
+datos$lateralidad_cat %<>% as.factor()
+datos$tipo_histologico %<>% as.factor()
+datos$eur_cat %<>% as.factor()
+datos$afr_cat %<>% as.factor()
+datos$nam_cat %<>% as.factor()
+```
+
+
+
+Para este analisis la varible de interes es PD-L1 y su relacion con las demas variables variables.
+
+
+```{r}
+#| label: tbl-pdl1
+#| tbl-cap: Frecuencia de la variable PD-L1
+#| echo: false
+datos %>% count(pd_l1) %>% kable(col.names = c("PD-L1", "n"),
+                                 align = 'cc')
+```
+
+
+
+Donde:
+
+- **0 (Negativo)**: No se detectó PD-L1 en las células cancerosas.
+- **1 (Positivo)**: Se detectó PD-L1 en las células cancerosas.
+- **NA** : Sin resultado valido.
+
+
+De acuerdo @tbl-pdl1 en la variable **PDL1** encontramos 191 varoles faltantes (NA), por tanto al eliminar esos valores faltantes nos quedamos con 139 observaciones.
+
+
+Dado la naturaleza de la variables de intereres (binaria) el obketivo seria por medio de la regresion logistica lograr estimar la relación de una o más variables independientes con la variable dependiente que en este caso es PD-L1 y factores determinate en dicha variable.
+
+
+Teniendo en cuenta el la tipologia de las variables independientes donde la mayoria son de tipo (categórico o factor), por tanto para la posible relacion que pueda haber entre la variable de interes (PD-L1) y las categoricas utilzaremos el El **test $\chi^2$ de independencia**, también conocido como  prueba $\chi^2$ de Pearson, se emplea para estudiar si existe asociación entre dos variables categóricas y el **COEFICIENTE V DE CRAMER** funciona como una medida de relación estadística basada en chi cuadrado, se pueda precisar la fuerza de asociación entre dos o más variables. En este sentido, el resultado del coeficiente varía entre cero y uno (siendo cero un valor nulo de asociación)
+
+
+```{r}
+#| include: false
+datos$pd_l1 %>% is.na() %>% sum()
+```
+
+```{r}
+#| echo: false
+# eliminando los valores NA de la variable pdl1
+datos <- datos[!is.na(datos$pd_l1),]
+```
+
+
+
+# Vizualización entre las variables
+
+
+Primeramente obervaremos la relacion e las variables de tipo numerico con respecto a la variable respuesta.
+
+
+
+```{r}
+datos %>% ggplot(aes(x=pd_l1, y=edad))+
+  geom_boxplot(aes(colour = pd_l1))+
+  scale_color_brewer(palette = "Set1")+
+  theme_bw()
+
+
+datos %>% ggplot(aes(x=pd_l1, y=eur))+
+  geom_boxplot(aes(colour = pd_l1))+
+  scale_color_brewer(palette = "Set2")+
+  theme_bw()
+
+
+datos %>% ggplot(aes(x=pd_l1, y=nam))+
+  geom_boxplot(aes(colour = pd_l1))+
+  scale_color_brewer(palette = "Set2")+
+  theme_bw()
+
+```
+
+
+
+
+
+
+
+
+```{r}
+#| include: false
+datos$pd_l1 %>% table()
+```
+
+| PD-L1        | Frecuencia | Col3 |
+|--------------|------------|------|
+| 0 (Negativo) | 121        |      |
+| 1 (Positivo) | 18         |      |
+
+
+
+
+
+
+
+
+
+```{r}
+datos %>% ggplot(aes(x=factor(pd_l1), fill = factor(ciudad)))+
+  geom_bar(position = "dodge")
+```
+
+
+
+
+
+
+
+
+
+

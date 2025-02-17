@@ -13,3 +13,6 @@ lubridate
 magrittr
 DescTools
 kableExtra
+RColorBrewer
+viridisLite
+viridis

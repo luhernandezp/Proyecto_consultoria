@@ -1,5 +1,6 @@
 ---
 title: "Análisis Descriptivo PD-L1"
+lang: es
 format: pdf
 editor: source
 
@@ -9,6 +10,7 @@ execute:
 ---
 
 ```{r}
+#| label: Librerias
 #| echo: false
 library(readxl)
 library(janitor)
@@ -16,6 +18,8 @@ library(tidyverse)
 library(magrittr)
 library(DescTools)
 library(kableExtra)
+library(RColorBrewer)
+library(viridis)
 ```
 
 ```{r}
@@ -38,10 +42,7 @@ datos$afr_cat %<>% as.factor()
 datos$nam_cat %<>% as.factor()
 ```
 
-
-
 Para este analisis la varible de interes es PD-L1 y su relacion con las demas variables variables.
-
 
 ```{r}
 #| label: tbl-pdl1
@@ -51,23 +52,17 @@ datos %>% count(pd_l1) %>% kable(col.names = c("PD-L1", "n"),
                                  align = 'cc')
 ```
 
-
-
 Donde:
 
-- **0 (Negativo)**: No se detectó PD-L1 en las células cancerosas.
-- **1 (Positivo)**: Se detectó PD-L1 en las células cancerosas.
-- **NA** : Sin resultado valido.
+-   **0 (Negativo)**: No se detectó PD-L1 en las células cancerosas.
+-   **1 (Positivo)**: Se detectó PD-L1 en las células cancerosas.
+-   **NA** : Sin resultado valido.
 
-
-De acuerdo @tbl-pdl1 en la variable **PDL1** encontramos 191 varoles faltantes (NA), por tanto al eliminar esos valores faltantes nos quedamos con 139 observaciones.
-
+De acuerdo @tbl-pdl1 en la variable **PDL1** encontramos 191 valores faltantes (NA), por tanto al eliminar esos valores faltantes nos quedamos con 139 observaciones.
 
 Dado la naturaleza de la variables de intereres (binaria) el obketivo seria por medio de la regresion logistica lograr estimar la relación de una o más variables independientes con la variable dependiente que en este caso es PD-L1 y factores determinate en dicha variable.
 
-
-Teniendo en cuenta el la tipologia de las variables independientes donde la mayoria son de tipo (categórico o factor), por tanto para la posible relacion que pueda haber entre la variable de interes (PD-L1) y las categoricas utilzaremos el El **test $\chi^2$ de independencia**, también conocido como  prueba $\chi^2$ de Pearson, se emplea para estudiar si existe asociación entre dos variables categóricas y el **COEFICIENTE V DE CRAMER** funciona como una medida de relación estadística basada en chi cuadrado, se pueda precisar la fuerza de asociación entre dos o más variables. En este sentido, el resultado del coeficiente varía entre cero y uno (siendo cero un valor nulo de asociación)
-
+Teniendo en cuenta el la tipologia de las variables independientes donde la mayoria son de tipo (categórico o factor), por tanto para la posible relacion que pueda haber entre la variable de interes (PD-L1) y las categoricas utilzaremos el El **test** $\chi^2$ de independencia, también conocido como prueba $\chi^2$ de Pearson, se emplea para estudiar si existe asociación entre dos variables categóricas y el **COEFICIENTE V DE CRAMER** funciona como una medida de relación estadística basada en chi cuadrado, se pueda precisar la fuerza de asociación entre dos o más variables. En este sentido, el resultado del coeficiente varía entre cero y uno (siendo cero un valor nulo de asociación)
 
 ```{r}
 #| include: false
@@ -80,51 +75,91 @@ datos$pd_l1 %>% is.na() %>% sum()
 datos <- datos[!is.na(datos$pd_l1),]
 ```
 
+# Visualización con las variables numericas
 
-
-# Vizualización entre las variables
-
-
-Primeramente obervaremos la relacion e las variables de tipo numerico con respecto a la variable respuesta.
-
-
+Primeramente observaremos la relación e las variables de tipo numérico con respecto a la variable de interes(PD-L1).
 
 ```{r}
-datos %>% ggplot(aes(x=pd_l1, y=edad))+
-  geom_boxplot(aes(colour = pd_l1))+
+#| echo: false
+#| layout-ncol: 2
+#| label: fig-box
+#| fig-cap: "Diagrama de cajas"
+#| fig-subcap: true
+
+
+datos %>% ggplot(aes(x=pd_l1, y=edad, colour = pd_l1))+
+  geom_boxplot()+
+  geom_jitter(width = 0.1)+
   scale_color_brewer(palette = "Set1")+
-  theme_bw()
+  theme_bw()+
+  labs(x="PD-L1",
+       y="Edad(años)")+
+  theme(legend.position = "none")
 
 
-datos %>% ggplot(aes(x=pd_l1, y=eur))+
-  geom_boxplot(aes(colour = pd_l1))+
+datos %>% ggplot(aes(x=pd_l1, y=eur, colour = pd_l1))+
+  geom_boxplot()+
+  geom_jitter(width = 0.1)+
   scale_color_brewer(palette = "Set2")+
-  theme_bw()
+  theme_bw()+
+  labs(x="PD-L1",
+       y="Componente Ancestral Europeo")+
+  theme(legend.position = "none")
 
 
-datos %>% ggplot(aes(x=pd_l1, y=nam))+
+datos %>% ggplot(aes(x=pd_l1, y=nam, colour = pd_l1))+
   geom_boxplot(aes(colour = pd_l1))+
-  scale_color_brewer(palette = "Set2")+
-  theme_bw()
+  geom_jitter(width = 0.1)+
+  scale_color_viridis(discrete=TRUE, option="viridis")+
+  theme_bw()+
+  labs(x="PD-L1",
+       y="Componente Ancestral Nativo Americano")+
+  theme(legend.position = "none")
+
+
+datos %>% ggplot(aes(x=pd_l1, y=afr, colour = pd_l1))+
+  geom_boxplot()+
+  geom_jitter(width = 0.1)+
+  scale_color_brewer(palette = "Accent")+
+  theme_bw()+
+  labs(x="PD-L1",
+       y="Componente Ancestral Africano")+
+  theme(legend.position = "none")
+
 
 ```
 
+De la @fig-box podemos concluir que:
 
+-   En la @fig-box-1 obervamos hay mayor variación en la edad de las mujeres con PD-L1 negativo, las mujeres con PD-L1 positivo tienden más jóvenes en comparación con aquellas con PD-L1 negativo.
 
+-   En la @fig-box-2 observamos que las mujeres con PD-L1 positivo presentan un mayor porcentaje de ascendencia europea.
 
+-   En la @fig-box-3 observamos que existe una ligera mayor proporción de ascendencia nativo americana en el grupo PD-L1 positivo, mientras que el grupo negativo hay mayor variabilidad con el porcentaje de ascendencia nativo americana.
 
+-   En la @fig-box-3 observamos una mayor dispersión en el grupo PD-L1 negativo en la ascendencia africana, para los del grupo PD-L1 positivo no hay mucha variabilidad con respecto a la ascendencia africana.
 
-
+Ademas en cada uno de los boxplots se observan indicios de que no hay diferencia significativas entre si es positivo o negativo con respecto a cada una de las variables, esta hipótesis sera verificada por la prueba de homogeneidad por medio del test chi-cuadrado donde la hipótesis nula es que las distribuciones de las dos poblaciones son iguales.
 
 ```{r}
 #| include: false
-datos$pd_l1 %>% table()
+stats::chisq.test(datos$pd_l1, datos$edad)
+stats::chisq.test(datos$pd_l1, datos$eur)
+stats::chisq.test(datos$pd_l1, datos$nam)
+stats::chisq.test(datos$pd_l1, datos$afr)
+stats::fisher.test(datos$pd_l1, datos$edad, alternative = "two.sided")
 ```
 
-| PD-L1        | Frecuencia | Col3 |
-|--------------|------------|------|
-| 0 (Negativo) | 121        |      |
-| 1 (Positivo) | 18         |      |
+| Variables | p-valor |
+|-----------|:-------:|
+| Edad-PDL1 | 0.3526  |
+| Eur-PDL1  |  0.46   |
+| Nam-PDL1  |  0.46   |
+| Afr-PDL1  | 0.5114  |
+
+: p-values del test chi-cuadrado {#tbl-chi}
+
+De acuerdo a la @tbl-chi podemos afrimar que no existe diferenecia entre los positivos y los negativos respecto a cada una de las variables.
 
 
 
@@ -135,16 +170,45 @@ datos$pd_l1 %>% table()
 
 
 ```{r}
-datos %>% ggplot(aes(x=factor(pd_l1), fill = factor(ciudad)))+
-  geom_bar(position = "dodge")
+#| label: fig-barra
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-cap: Graficos de Barras
+#| fig-subcap: true
+#| layout-ncol: 2
+
+
+datos %>% ggplot(aes(x=pd_l1, fill=ciudad))+
+  geom_bar(position = "dodge", color="black") +
+  scale_color_brewer(palette = "Set1")+
+  labs(x="PD-L1", fill="Ciudad")+
+  scale_fill_hue(labels=c("Medellin", "Barranquila", "Cali"))+
+  theme_bw()
+
+datos %>% ggplot(aes(x=pd_l1, fill=estrato))+
+  geom_bar(position = "dodge", color="black") +
+  scale_color_brewer(palette = "Set2")+
+  labs(x="PD-L1", fill="Estrato")+
+  theme_bw()
+
+
+
+datos %>% ggplot(aes(x=pd_l1, fill=educacion))+
+  geom_bar(position = "dodge", color="black") +
+  scale_fill_brewer(palette = "Set3")+
+  labs(x="PD-L1")+
+  theme_bw() +
+  scale_fill_hue(labels=c("Ninguno","Primaria","Secundaria",
+                          "Profesional","Postgrado"))
+
+
+datos %>% ggplot(aes(x=pd_l1, fill=afiliacion))+
+  geom_bar(position = "dodge", color="black") +
+  scale_fill_brewer(palette = "Pastel1")+
+  labs(x="PD-L1", fill="Afiliación")+
+  theme_bw()
+
+
+
 ```
-
-
-
-
-
-
-
-
-
-

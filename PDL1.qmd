@@ -2,7 +2,7 @@
 title: "Análisis Descriptivo PD-L1"
 lang: es
 format: pdf
-editor: source
+editor: visual
 
 execute:
   warning: false
@@ -20,6 +20,7 @@ library(DescTools)
 library(kableExtra)
 library(RColorBrewer)
 library(viridis)
+library(visdat)
 ```
 
 ```{r}
@@ -37,12 +38,28 @@ datos$estrato %<>% as.factor()
 datos$afiliacion %<>% as.factor()
 datos$lateralidad_cat %<>% as.factor()
 datos$tipo_histologico %<>% as.factor()
+datos$grado_histologico %<>% as.factor()
 datos$eur_cat %<>% as.factor()
 datos$afr_cat %<>% as.factor()
 datos$nam_cat %<>% as.factor()
+datos$grado_nuclear %<>% as.factor()
+datos$t %<>% as.factor()
+datos$n %<>% as.factor()
+datos$m %<>% as.factor()
+datos$estadio %<>% as.factor()
+datos$estadio_cat %<>% as.factor()
+datos$er %<>% as.factor()
+datos$pr %<>% as.factor()
+datos$her2 %<>% as.factor()
+datos$recaidas %<>% as.factor()
+datos$subtipo_molecular_definitivo %<>% as.factor()
+datos$interaccion_reg_stage %<>% as.factor()
+
+
+
 ```
 
-Para este analisis la varible de interes es PD-L1 y su relacion con las demas variables variables.
+Para este análisis la variable de interés es PD-L1 y su relación con las demás variables variables.
 
 ```{r}
 #| label: tbl-pdl1
@@ -58,11 +75,21 @@ Donde:
 -   **1 (Positivo)**: Se detectó PD-L1 en las células cancerosas.
 -   **NA** : Sin resultado valido.
 
-De acuerdo @tbl-pdl1 en la variable **PDL1** encontramos 191 valores faltantes (NA), por tanto al eliminar esos valores faltantes nos quedamos con 139 observaciones.
+De acuerdo con la tabla @tbl-pdl1, la variable PD-L1 presenta 191 valores faltantes (NA). Al eliminar estos valores, el número de observaciones se reduce a 139. Es importante considerar que los valores faltantes representan más de la mitad de los registros, lo que puede generar sesgos en el análisis y afectar la capacidad de encontrar resultados significativos.
 
-Dado la naturaleza de la variables de intereres (binaria) el obketivo seria por medio de la regresion logistica lograr estimar la relación de una o más variables independientes con la variable dependiente que en este caso es PD-L1 y factores determinate en dicha variable.
+Teniendo en cuenta la tipología de las variables independientes, donde la mayoría son de tipo categórico, se utilizará la prueba de independencia mediante el **Test exacto de Fisher** para evaluar la posible relación entre la variable de interés (PD-L1) y las variables categóricas. Esta prueba permite determinar si existe una asociación significativa entre dos variables categóricas.
 
-Teniendo en cuenta el la tipologia de las variables independientes donde la mayoria son de tipo (categórico o factor), por tanto para la posible relacion que pueda haber entre la variable de interes (PD-L1) y las categoricas utilzaremos el El **test** $\chi^2$ de independencia, también conocido como prueba $\chi^2$ de Pearson, se emplea para estudiar si existe asociación entre dos variables categóricas y el **COEFICIENTE V DE CRAMER** funciona como una medida de relación estadística basada en chi cuadrado, se pueda precisar la fuerza de asociación entre dos o más variables. En este sentido, el resultado del coeficiente varía entre cero y uno (siendo cero un valor nulo de asociación)
+Además, para medir el tamaño del efecto, se empleará el **Coeficiente V de Cramer**, el cual indica la fuerza de asociación entre las variables. Los límites utilizados para su clasificación son los siguientes:
+
+\newpage
+
+-   Resultado entre 0 y 0,2 indica que **no hay asociación** 
+
+-   Resultado de 0,2 indica una **asociación débil** 
+
+-   Resultado entre 0,2 y 0,6 **indica una asociación moderada** 
+
+-   Resultado entre 0,6 y 1 indica una **asociación fuerte.** 
 
 ```{r}
 #| include: false
@@ -72,12 +99,12 @@ datos$pd_l1 %>% is.na() %>% sum()
 ```{r}
 #| echo: false
 # eliminando los valores NA de la variable pdl1
-datos <- datos[!is.na(datos$pd_l1),]
+pdl1 <- datos[!is.na(datos$pd_l1),]
 ```
 
-# Visualización con las variables numericas
+# Análisis con las variables numéricas
 
-Primeramente observaremos la relación e las variables de tipo numérico con respecto a la variable de interes(PD-L1).
+En primer lugar, analizaremos la relación entre las variables numéricas y la variable de interés (PD-L1) para identificar posibles asociaciones significativas.
 
 ```{r}
 #| echo: false
@@ -87,7 +114,7 @@ Primeramente observaremos la relación e las variables de tipo numérico con res
 #| fig-subcap: true
 
 
-datos %>% ggplot(aes(x=pd_l1, y=edad, colour = pd_l1))+
+pdl1 %>% ggplot(aes(x=pd_l1, y=edad, colour = pd_l1))+
   geom_boxplot()+
   geom_jitter(width = 0.1)+
   scale_color_brewer(palette = "Set1")+
@@ -97,7 +124,7 @@ datos %>% ggplot(aes(x=pd_l1, y=edad, colour = pd_l1))+
   theme(legend.position = "none")
 
 
-datos %>% ggplot(aes(x=pd_l1, y=eur, colour = pd_l1))+
+pdl1 %>% ggplot(aes(x=pd_l1, y=eur, colour = pd_l1))+
   geom_boxplot()+
   geom_jitter(width = 0.1)+
   scale_color_brewer(palette = "Set2")+
@@ -107,7 +134,7 @@ datos %>% ggplot(aes(x=pd_l1, y=eur, colour = pd_l1))+
   theme(legend.position = "none")
 
 
-datos %>% ggplot(aes(x=pd_l1, y=nam, colour = pd_l1))+
+pdl1 %>% ggplot(aes(x=pd_l1, y=nam, colour = pd_l1))+
   geom_boxplot(aes(colour = pd_l1))+
   geom_jitter(width = 0.1)+
   scale_color_viridis(discrete=TRUE, option="viridis")+
@@ -117,7 +144,7 @@ datos %>% ggplot(aes(x=pd_l1, y=nam, colour = pd_l1))+
   theme(legend.position = "none")
 
 
-datos %>% ggplot(aes(x=pd_l1, y=afr, colour = pd_l1))+
+pdl1 %>% ggplot(aes(x=pd_l1, y=afr, colour = pd_l1))+
   geom_boxplot()+
   geom_jitter(width = 0.1)+
   scale_color_brewer(palette = "Accent")+
@@ -129,9 +156,11 @@ datos %>% ggplot(aes(x=pd_l1, y=afr, colour = pd_l1))+
 
 ```
 
+\newpage
+
 De la @fig-box podemos concluir que:
 
--   En la @fig-box-1 obervamos hay mayor variación en la edad de las mujeres con PD-L1 negativo, las mujeres con PD-L1 positivo tienden más jóvenes en comparación con aquellas con PD-L1 negativo.
+-   En la @fig-box-1 observamos hay mayor variación en la edad de las mujeres con PD-L1 negativo, las mujeres con PD-L1 positivo tienden más jóvenes en comparación con aquellas con PD-L1 negativo.
 
 -   En la @fig-box-2 observamos que las mujeres con PD-L1 positivo presentan un mayor porcentaje de ascendencia europea.
 
@@ -139,7 +168,7 @@ De la @fig-box podemos concluir que:
 
 -   En la @fig-box-3 observamos una mayor dispersión en el grupo PD-L1 negativo en la ascendencia africana, para los del grupo PD-L1 positivo no hay mucha variabilidad con respecto a la ascendencia africana.
 
-Ademas en cada uno de los boxplots se observan indicios de que no hay diferencia significativas entre si es positivo o negativo con respecto a cada una de las variables, esta hipótesis sera verificada por la prueba de homogeneidad por medio del test chi-cuadrado donde la hipótesis nula es que las distribuciones de las dos poblaciones son iguales.
+Además, en los boxplots se observan indicios de que no existen diferencias significativas entre los grupos positivo y negativo con respecto a cada una de las variables analizadas. Esta hipótesis será verificada mediante una prueba de homogeneidad utilizando el test chi-cuadrado, donde la hipótesis nula establece que las distribuciones de ambas poblaciones son iguales.
 
 ```{r}
 #| include: false
@@ -157,36 +186,77 @@ stats::fisher.test(datos$pd_l1, datos$edad, alternative = "two.sided")
 | Nam-PDL1  |  0.46   |
 | Afr-PDL1  | 0.5114  |
 
-: p-values del test chi-cuadrado {#tbl-chi}
+: P-values del test chi-cuadrado {#tbl-chi}
 
-De acuerdo a la @tbl-chi podemos afrimar que no existe diferenecia entre los positivos y los negativos respecto a cada una de las variables.
+De acuerdo con la tabla @tbl-chi, podemos afirmar que no existen diferencias significativas entre los grupos positivo y negativo con respecto a cada una de las variables analizadas.
 
+# Análisis con las variables categóricas
 
+A continuación, analizaremos la relación entre la variable PD-L1 y las demás variables categóricas mediante el **Test exacto de Fisher**. En caso de encontrar una asociación significativa, se medirá el tamaño del efecto utilizando el **coeficiente V de Cramer**.
 
+```{r}
+#| include: false
 
+# Test de independecia de Fisher
 
+stats::fisher.test(datos$pd_l1, datos$ciudad)
+stats::fisher.test(datos$pd_l1, datos$estrato)
+stats::fisher.test(datos$pd_l1, datos$educacion)
+stats::fisher.test(datos$pd_l1, datos$afiliacion)
+stats::fisher.test(datos$pd_l1, datos$lateralidad_cat)
+stats::fisher.test(datos$pd_l1, datos$tipo_histologico)
+stats::fisher.test(datos$pd_l1, datos$grado_histologico) # significativo
+stats::fisher.test(datos$pd_l1, datos$grado_nuclear)
+stats::fisher.test(datos$pd_l1, datos$er) #significativo
+stats::fisher.test(datos$pd_l1, datos$pr) # significativo
+stats::fisher.test(datos$pd_l1, datos$her2)
+stats::fisher.test(datos$pd_l1, datos$recaidas)
+stats::fisher.test(datos$pd_l1, datos$estadio)
+stats::fisher.test(pdl1$pd_l1, pdl1$subtipo_molecular_definitivo) # Significativo
+stats::fisher.test(pdl1$pd_l1, pdl1$interaccion_reg_stage)
+```
 
+```{r}
+#| include: false
+# Coeficiente de asociacion de Cramer
+CramerV(pdl1$pd_l1, pdl1$grado_histologico)
+CramerV(pdl1$pd_l1, pdl1$er)
+CramerV(pdl1$pd_l1, pdl1$pr)
+CramerV(pdl1$pd_l1, pdl1$subtipo_molecular_definitivo)
+```
 
+Mediante la prueba de independencia de Fisher, identificaremos las variables que presentan una asociación significativa con la variable PD-L1.
 
+| **Variables**            | **P-value** | **Coeficiente V de Cramer** |
+|--------------------------|:-----------:|:---------------------------:|
+| PDL1 - Grado Histológico |   0.01253   |           0.2764            |
+| PDL1 - Er                |  4.156e-05  |           0.3662            |
+| PDL1 - Pr                |  0.0004695  |           0.3080            |
+| PDL1- Subtipo Molecular  |  0.0007031  |           0.3188            |
+
+: P-values Test exacto de Fisher {#tbl-prueba_fisher}
+
+De la @tbl-prueba_fisher podemos concluir que aunque la asociación es significativa, el tamaño del efecto (V de Cramer) indica que estas relaciones son de debil a moderada, por lo que PD-L1 puede estar influenciado por otros factores adicionales, la mayor asociación se observa con Er (0.3662), lo que podría indicar un papel relevante de PD-L1 en tumores con expresión de receptores. hormonales.
 
 ```{r}
 #| label: fig-barra
-#| echo: false
+#| eval: false
 #| message: false
 #| warning: false
 #| fig-cap: Graficos de Barras
 #| fig-subcap: true
+#| include: false
 #| layout-ncol: 2
 
 
-datos %>% ggplot(aes(x=pd_l1, fill=ciudad))+
+pdl1 %>% ggplot(aes(x=pd_l1, fill=ciudad))+
   geom_bar(position = "dodge", color="black") +
   scale_color_brewer(palette = "Set1")+
   labs(x="PD-L1", fill="Ciudad")+
   scale_fill_hue(labels=c("Medellin", "Barranquila", "Cali"))+
   theme_bw()
 
-datos %>% ggplot(aes(x=pd_l1, fill=estrato))+
+pdl1 %>% ggplot(aes(x=pd_l1, fill=estrato))+
   geom_bar(position = "dodge", color="black") +
   scale_color_brewer(palette = "Set2")+
   labs(x="PD-L1", fill="Estrato")+
@@ -194,21 +264,35 @@ datos %>% ggplot(aes(x=pd_l1, fill=estrato))+
 
 
 
-datos %>% ggplot(aes(x=pd_l1, fill=educacion))+
-  geom_bar(position = "dodge", color="black") +
-  scale_fill_brewer(palette = "Set3")+
-  labs(x="PD-L1")+
-  theme_bw() +
-  scale_fill_hue(labels=c("Ninguno","Primaria","Secundaria",
-                          "Profesional","Postgrado"))
+# datos %>% ggplot(aes(x=pd_l1, fill=educacion))+
+#   geom_bar(position = "dodge", color="black") +
+#   scale_fill_brewer(palette = "Set3")+
+#   labs(x="PD-L1")+
+#   theme_bw() +
+#   scale_fill_hue(labels=c("Ninguno","Primaria","Secundaria",
+#                           "Profesional","Postgrado"))
 
 
-datos %>% ggplot(aes(x=pd_l1, fill=afiliacion))+
+pdl1 %>% ggplot(aes(x=pd_l1, fill=afiliacion))+
   geom_bar(position = "dodge", color="black") +
   scale_fill_brewer(palette = "Pastel1")+
   labs(x="PD-L1", fill="Afiliación")+
+  scale_fill_hue(labels=c("Contributivo", "Subsidiado")) +
   theme_bw()
 
 
 
+
+pdl1 %>% ggplot(aes(x=pd_l1, fill=lateralidad_cat))+
+  geom_bar(position = "dodge", color="black") +
+  scale_fill_brewer(palette = "Pastel1")+
+  labs(x="PD-L1", fill="Lateralidad")+
+  scale_fill_hue(labels=c("Izquierda", "Derecho", "Bilateral")) +
+  theme_bw()
 ```
+
+# Conclusiones
+
+La variable PD-L1 presenta un alto número de valores faltantes (191 de 330 registros, aproximadamente el 58%). Esto reduce significativamente el tamaño muestral a 139 observaciones y puede generar sesgos en las conclusiones obtenidas.No se encontraron diferencias significativas entre los grupos PD-L1 positivo y negativo en relación con las variables numéricas analizadas (edad y componentes ancestrales), la prueba de chi-cuadrado confirmó que las distribuciones de estas variables son similares en ambos grupos (p-valores mayores a 0.35 en todos los casos), sin embargo, se observa que las mujeres con PD-L1 positivo tienden a ser más jóvenes y a tener una mayor proporción de ascendencia europea.
+
+Se identificó una asociación estadísticamente significativa entre PD-L1 y ciertas variables clínicas (grado histológico, expresión de receptores hormonales ER y PR, y subtipo molecular). El coeficiente V de Cramer indica que estas asociaciones son de débil a moderada, con la mayor asociación observada en la expresión de ER (V = 0.3662), estos resultados sugieren que PD-L1 podría estar relacionado con la biología de los tumores que expresan receptores hormonales.

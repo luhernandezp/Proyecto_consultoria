@@ -51,8 +51,6 @@ bd <- clean_names(bd)
 bd <- bd[,-1]
 ```
 
-
-
 ```{r}
 #| label: tbl-fal
 #| echo: false
@@ -62,36 +60,33 @@ apply(is.na(bd), 2, sum) |> kable(col.names = c("Variables",
                                    align = c('c'))
 ```
 
-
-
-
 De la @tbl-fal podemos concluir que:
 
 **Variables sin valores faltantes**
 
 Muchas variables clave no tienen datos faltantes, lo que indica una base de datos bien estructurada en su mayoría. Ejemplos:
 
-- `estado_vital_5anos`
-- `estado_vital_2`
-- `tiempo_evento_bx_5anos`
-- `edad`, `ciudad`, `afiliacion`, `fecha_dx`, `tiempo_supervivencia_dias`, etc.
+-   `estado_vital_5anos`
+-   `estado_vital_2`
+-   `tiempo_evento_bx_5anos`
+-   `edad`, `ciudad`, `afiliacion`, `fecha_dx`, `tiempo_supervivencia_dias`, etc.
 
 **Variables con algunos valores faltantes**
 
 Algunas variables presentan valores faltantes moderados (menores a 20 casos), lo que puede impactar el análisis dependiendo de la variable. Ejemplos:
 
-- `grado_histologico` (31 valores faltantes)
-- `t` (15), `n` (16), `m` (9)
-- `estadio` (15), `er` (10), `pr` (11), `her2` (13)
-- `subtipo_molecular_definitivo` (10)
+-   `grado_histologico` (31 valores faltantes)
+-   `t` (15), `n` (16), `m` (9)
+-   `estadio` (15), `er` (10), `pr` (11), `her2` (13)
+-   `subtipo_molecular_definitivo` (10)
 
 **Variables con muchos valores faltantes**
 
 Algunas variables tienen un número considerable de datos faltantes, lo que puede representar un problema para el análisis. Ejemplos:
 
-- `recaidas` (131 valores faltantes)
-- `pd_l1` (191)
-- `area_ocupada_por_los_ti_ls_estromales_percent_total` (139)
+-   `recaidas` (131 valores faltantes)
+-   `pd_l1` (191)
+-   `area_ocupada_por_los_ti_ls_estromales_percent_total` (139)
 
 ```{r}
 #| echo: false
@@ -187,21 +182,20 @@ El coeficiente de correlación de Cramer's V es una medida de asociación entre 
 
 Cramer's V cuantifica la fuerza de la asociación entre dos variables categóricas. Su valor oscila entre 0 y 1:
 
-- 0: Indica que no hay asociación entre las variables (son independientes).
-- 1: Indica una asociación perfecta (las variables están completamente relacionadas).
+-   0: Indica que no hay asociación entre las variables (son independientes).
+-   1: Indica una asociación perfecta (las variables están completamente relacionadas).
 
 Cramer's V se calcula a partir de la prueba de chi-cuadrado ($X^2$) y ajusta el tamaño de la tabla de contingencia. La fórmula es:
 
 $$
 V=\sqrt{\frac{x^2}{n.min(r-1,c-1)}}
-$$
-Donde:
+$$ Donde:
 
-- $X^2:$Es el valor de la prueba de chi-cuadrado.
-- $n$:Es el número total de observaciones
-- $r$:Es el numero de filas de la tabla de contingencia.
-- $c:$Es el numero de columnas de la tabla de contingencia.
-- $min(r-1,c-1):$Es el minimo entre el numero de filas menos 1 y el numero de columnas menos 1.
+-   $X^2:$Es el valor de la prueba de chi-cuadrado.
+-   $n$:Es el número total de observaciones
+-   $r$:Es el numero de filas de la tabla de contingencia.
+-   $c:$Es el numero de columnas de la tabla de contingencia.
+-   $min(r-1,c-1):$Es el minimo entre el numero de filas menos 1 y el numero de columnas menos 1.
 
 ## Correlaciones entre las variables
 
@@ -277,7 +271,7 @@ En los diagramas de barras presentados, podemos observar las frecuencias de los 
 
 \newpage
 
-## Análisis descriptivo de variables en conjunto con la respuesta 
+## Análisis descriptivo de variables en conjunto con la respuesta
 
 ```{r}
 #| echo: false
@@ -293,7 +287,6 @@ for (i in 1:(length(variables)-1)){
                                                           variables[i+1]))
  }
 ```
-
 
 Para finalizar el análisis descriptivo, observamos cómo se relacionan los niveles de las variables predictoras más influyentes con los niveles de la variable de respuesta. Los gráficos de mosaico muestran, de manera visual, la frecuencia con la que los distintos niveles de la variable de respuesta coinciden con cada una de las categorías de las variables predictoras. Esto nos permite identificar patrones en la distribución de los datos y evaluar posibles asociaciones entre las variables, lo que será útil para el análisis posterior.
 
@@ -387,11 +380,6 @@ modelo <- coxph(Surv(tiempo_supervivencia_dias,estado_vital_5anos==1) ~ ciudad+
 summary(modelo)
 ```
 
-
-
-
-
-
 Se realizó un modelo de regresión de Cox para evaluar el impacto de diversas variables sobre la supervivencia a 5 años en una muestra de 330 individuos, de los cuales 70 fallecieron durante el seguimiento. Los principales hallazgos son los siguientes:
 
 \begin{itemize}
@@ -420,8 +408,3 @@ Se realizó un modelo de regresión de Cox para evaluar el impacto de diversas v
 \end{itemize}
 
 La ciudad de residencia es el factor más influyente en la supervivencia a 5 años, con un aumento del riesgo de muerte de hasta 3.33 veces en comparación con la ciudad de referencia. Se recomienda explorar factores adicionales, como características clínicas y biomarcadores, para mejorar la capacidad predictiva del modelo.
-
-
-
-
-

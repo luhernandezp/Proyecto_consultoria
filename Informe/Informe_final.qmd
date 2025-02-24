@@ -5,23 +5,94 @@ format: pdf
 editor: visual
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
 ```{r}
-1 + 1
-```
+#| label: Librerias
+#| echo: false
+#| message: false
+#| warning: false
+library(readxl)
+library(janitor)
+library(tidyverse)
+library(magrittr)
+library(DescTools)
+library(kableExtra)
+library(RColorBrewer)
+library(viridis)
+library(visdat)
 
-You can add options to executable code like this
+library(survival)
+
+```
 
 ```{r}
 #| echo: false
-2 * 2
+
+# cargando la base de datos
+datos <- read_excel("BDD.Análisis_PD-L1_26-09-2024.xlsx")
+datos %<>% clean_names() # limpiando los nombres de las variables
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+```{r}
+#| echo: false
+
+# datos$estado_vital_5anos %<>% as.factor()
+datos$pd_l1 %<>% as.factor()
+datos$ciudad %<>% as.factor()
+datos$educacion %<>% as.factor()
+datos$estrato %<>% as.factor()
+datos$afiliacion %<>% as.factor()
+datos$lateralidad_cat %<>% as.factor()
+datos$tipo_histologico %<>% as.factor()
+datos$grado_histologico %<>% as.factor()
+datos$eur_cat %<>% as.factor()
+datos$afr_cat %<>% as.factor()
+datos$nam_cat %<>% as.factor()
+datos$grado_nuclear %<>% as.factor()
+datos$t %<>% as.factor()
+datos$n %<>% as.factor()
+datos$m %<>% as.factor()
+datos$estadio %<>% as.factor()
+datos$estadio_cat %<>% as.factor()
+datos$er %<>% as.factor()
+datos$pr %<>% as.factor()
+datos$her2 %<>% as.factor()
+datos$recaidas %<>% as.factor()
+datos$subtipo_molecular_definitivo %<>% as.factor()
+datos$interaccion_reg_stage %<>% as.factor()
+```
+
+# Análisis Exploratorio
+
+```{r}
+#| include: false
+datos %>% dim()
+```
+
+La base de datos cuenta con 330 observaciones y 54 variables
+
+```{r}
+datos %>% count(estado_vital_5anos) %>% kable(align = 'cc')
+```
+
+Observamos que el numero de observaciones por muerte de cáncer de mama es bajo en comparación al numero de censuras es de 260.
+
+```{r}
+#| include: false
+sapply(datos, function(x) sum(is.na(x)))
+```
+
+```{r}
+stats::chisq.test(datos$estado_vital_5anos, datos$afiliacion)
+```
+
+```{r}
+cancer.km <- survfit(Surv(tiempo_supervivencia_dias,estado_vital_5anos) ~ 1, 
+                     data = datos, type = "kaplan-meier")
+
+summary(cancer.km)
+```
+
+```{r}
+coxph(Surv(tiempo_supervivencia_dias,estado_vital_5anos) ~ edad+eur+nam+afr+afiliacion, 
+      data = datos)
+```

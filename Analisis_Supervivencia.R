@@ -135,7 +135,26 @@ gantt_plot <- ggplot(Datos, aes(x = inicio, xend =tiempo_supervivencia_años , y
 print(gantt_plot)
 ggplotly(gantt_plot, tooltip = "text")
 
+Datos$estado_vital_5años %>% table()
 
+set.seed(021)
+db <- Datos[sample(1:nrow(Datos),50),]
+
+db %>% mutate(
+  ID=1:nrow(db),
+  Base = 0, End = Base + tiempo_supervivencia_dias) %>% 
+  ggplot(aes(x=Base,y = ID,yend=ID,xend=End))+
+  geom_segment(linewidth = 0.8,aes(color=factor(estado_vital_5años)))+
+  geom_point(aes(x=End,shape = factor(estado_vital_5años)),size=2,show.legend = FALSE)+
+  geom_point(aes(x=End),shape = 16,size = 0.5)+
+  scale_shape_manual(values = c("0","x"))+theme_classic()+
+  scale_color_manual(values = c("skyblue3","red3"))+
+  theme(legend.position = "bottom")+
+  labs(x = "Tiempo de seguiemiento (dias)",shape="Status",color="Estatus",title = "Tiempo de supervivencia")+
+  geom_vline(xintercept = 1825,linetype=2,linewidth=0.5)
+ 
+
+Datos_modelo %>%  names() %>% length()
 
 # Con esto podemos tener indicios de que las curvas de supervivencia tendrán altas 
 # probabilidades de supervivencia ya que en nuestro conjunto de datos son mas las personas 
@@ -155,7 +174,7 @@ library(ggfortify)
 
 # Revisenos las tablas y curvas de supervivencia para nuestros datos.
 
-cancer_km <- survfit(Surv(tiempo_supervivencia_dias,
+cancer_km <- survfit(Surv(tiempo_evento_bx_5años,
                           estado_vital_5años==1) ~ 1, 
                      data = Datos, 
                      type = "kaplan-meier"
@@ -180,7 +199,7 @@ autoplot(cancer_km,type="fill",surv.alpha=0.9,
          conf.int.alpha=0.2,
          censor.size=5,
          censor.colour="purple",col="red")+
-  labs(x = "\n Survival Time (Dias) ", y = "Survival Probabilities \n", 
+  labs(x = "\n Survival Time (Años) ", y = "Survival Probabilities \n", 
        title = "Estimated Survival Curves Of \n Cancer Patients Using KM")+
   theme(plot.title = element_text(hjust = 0.5), 
         axis.title.x = element_text(face="bold", colour="#FF7A33", size = 12),
@@ -204,7 +223,7 @@ print(cancer_km, print.rmean = TRUE)
 # ya que en nuestro conjunto de datos tenemos muchas variables que nos sirven para categorizar 
 # por grupos es decir variables categóricas
 
-cancer.km <- survival::survfit(Surv(tiempo_supervivencia_dias,
+cancer.km <- survival::survfit(Surv(tiempo_evento_bx_5años,
                           estado_vital_5años==1) ~ ciudad, 
                      data = Datos, 
                      type = "kaplan-meier")
@@ -256,7 +275,7 @@ theme(plot.title = element_text(hjust = 0.5),
 ## ---------------------------- Variable edad_cat ----------------------------##
 ##################################---------------###############################
 
-cancer.km.edad.cat <- survfit(Surv(tiempo_supervivencia_dias,
+cancer.km.edad.cat <- survfit(Surv(tiempo_evento_bx_5años,
                           estado_vital_5años==1) ~ edad_cat, 
                      data = Datos, 
                      type = "kaplan-meier")
@@ -291,7 +310,7 @@ Datos$edad_cat %>% factor()
 
 # Prueba de hipotesiss 
 # H_0: Las curvas son iguales estadisticamente vs H_1: Las curvas son diferentes 
-survdiff(Surv(tiempo_supervivencia_dias,
+survdiff(Surv(tiempo_evento_bx_5años,
               estado_vital_5años==1) ~ edad_cat, 
          data = Datos)
 
@@ -319,7 +338,7 @@ ggsurvplot(cancer.km.edad.cat, data = Datos,
 
 ##------------------------------ Variable edad_cat2 --------------------------##
 ################################-------------------#############################
-cancer.km.edad.cat2 <- survfit(Surv(tiempo_supervivencia_dias,
+cancer.km.edad.cat2 <- survfit(Surv(tiempo_evento_bx_5años,
                                    estado_vital_5años==1) ~ edad.cat2, 
                               data = Datos, 
                               type = "kaplan-meier")
@@ -353,7 +372,7 @@ ggsurvplot(cancer.km.edad.cat2, data = Datos,
 #################################---------------################################
 
 
-cancer.km.ciudad <- survfit(Surv(tiempo_supervivencia_dias,
+cancer.km.ciudad <- survfit(Surv(tiempo_evento_bx_5años,
                                     estado_vital_5años==1) ~ ciudad, 
                                data = Datos, 
                                type = "kaplan-meier")
@@ -386,7 +405,7 @@ Datos$ciudad %>% factor()
 ###############################----------------#################################
 
 
-cancer.km.estrato <- survfit(Surv(tiempo_supervivencia_dias,
+cancer.km.estrato <- survfit(Surv(tiempo_evento_bx_5años,
                                  estado_vital_5años==1) ~ estrato, 
                             data = Datos, 
                             type = "kaplan-meier")
@@ -411,7 +430,7 @@ ggsurvplot(cancer.km.estrato, data = Datos,
 ###############################----------------#################################
 
 
-cancer.km.estrato.cat <- survfit(Surv(tiempo_supervivencia_dias,
+cancer.km.estrato.cat <- survfit(Surv(tiempo_evento_bx_5años,
                                  estado_vital_5años==1) ~ estrato_cat, 
                             data = Datos, 
                             type = "kaplan-meier")
@@ -440,7 +459,7 @@ Datos$estrato_cat %>% factor()
 ##---------------------------- Variable educación --------------------------##
 ###############################----------------#################################
 
-cancer.km.educacion <- survfit(Surv(tiempo_supervivencia_dias,
+cancer.km.educacion <- survfit(Surv(tiempo_evento_bx_5años,
                                       estado_vital_5años==1) ~ educacion, 
                                  data = Datos, 
                                  type = "kaplan-meier")
@@ -466,7 +485,7 @@ Datos$educacion %>% factor()
 ##---------------------------- Variable educación_cat ------------------------##
 ###############################----------------#################################
 
-cancer.km.educacion_cat <- survfit(Surv(tiempo_supervivencia_dias,
+cancer.km.educacion_cat <- survfit(Surv(tiempo_evento_bx_5años,
                                     estado_vital_5años==1) ~ educacion_cat, 
                                data = Datos, 
                                type = "kaplan-meier")
@@ -491,7 +510,7 @@ ggsurvplot(cancer.km.educacion_cat, data = Datos,
 ###############################----------------#################################
 
 
-cancer.km.tipo_histoloogico <- survfit(Surv(tiempo_supervivencia_dias,
+cancer.km.tipo_histoloogico <- survfit(Surv(tiempo_evento_bx_5años,
                                         estado_vital_5años==1) ~ tipo_histologico, 
                                    data = Datos, 
                                    type = "kaplan-meier")
@@ -518,7 +537,7 @@ Datos$tipo_histologico %>% factor()
 ###############################----------------#################################
 
 
-cancer.km.tipo_histoloogico_cat <- survfit(Surv(tiempo_supervivencia_dias,
+cancer.km.tipo_histoloogico_cat <- survfit(Surv(tiempo_evento_bx_5años,
                                             estado_vital_5años==1) ~ tipo_histol_cat, 
                                        data = Datos, 
                                        type = "kaplan-meier")
@@ -542,7 +561,7 @@ ggsurvplot(cancer.km.tipo_histoloogico_cat, data = Datos,
 ##---------------------------- Variable estadio ------------------------------##
 ###############################----------------#################################
 
-cancer.km.estadio <- survfit(Surv(tiempo_supervivencia_dias,
+cancer.km.estadio <- survfit(Surv(tiempo_evento_bx_5años,
                                                 estado_vital_5años==1) ~ estadio, 
                                            data = Datos, 
                                            type = "kaplan-meier")
@@ -570,7 +589,7 @@ ggsurvplot(cancer.km.estadio, data = Datos,
 ##---------------------------- Variable estadio_cat --------------------------##
 ###############################----------------#################################
 
-cancer.km.estadio_cat <- survfit(Surv(tiempo_supervivencia_dias,
+cancer.km.estadio_cat <- survfit(Surv(tiempo_evento_bx_5años,
                                   estado_vital_5años==1) ~ estadio_cat, 
                              data = Datos, 
                              type = "kaplan-meier")
@@ -597,7 +616,7 @@ ggsurvplot(cancer.km.estadio_cat, data = Datos,
 ##---------------------------- Variable estadio_cat3 --------------------------##
 ###############################----------------#################################
 
-cancer.km.estadio_cat3 <- survfit(Surv(tiempo_supervivencia_dias,
+cancer.km.estadio_cat3 <- survfit(Surv(tiempo_evento_bx_5años,
                                       estado_vital_5años==1) ~ estadio_cat3, 
                                  data = Datos, 
                                  type = "kaplan-meier")
@@ -608,22 +627,23 @@ ggsurvplot(cancer.km.estadio_cat3, data = Datos,
            conf.int = FALSE,          # Add confidence interval
            pval = TRUE, 
            pval.coord = c(1, 0.75),
-           risk.table = TRUE,        # Add risk table
+           risk.table = FALSE,        # Add risk table
            risk.table.col = "strata",# Risk table color by groups
-           #legend.labs = c("",""),
-           legend.title = "Grupos de Estratos",# Change legend labels
+           legend.labs = c("Estadíos 0-IA-IB"," Estadíos IIB-IIIA"," Estadíos IIIB- IIIC- IV"),
+           legend.title = "Categorias",# Change legend labels
            risk.table.height = 0.25, # Useful to change when you have multiple groups
            ggtheme = theme_bw(),      # Change ggplot2 theme
            surv.median.line = "hv", alpha=0.7,
            ylim = c(0.4, 1)
 )
 
+Datos$estadio_cat3 %>% factor()
 # P-valor  0.00001
 
 ##---------------------------- Variable estadio-Early_late -------------------##
 ###############################----------------#################################
 
-cancer.km.estadio_Early_late <- survfit(Surv(tiempo_supervivencia_dias,
+cancer.km.estadio_Early_late <- survfit(Surv(tiempo_evento_bx_5años,
                                        estado_vital_5años==1) ~ estadio.Early_late, 
                                   data = Datos, 
                                   type = "kaplan-meier")
@@ -663,7 +683,7 @@ ggsurvplot(cancer.km.estadio_Early_late, data = Datos,
 # casi la mitad de los valores de la varible son daos faltantes.
 
 
-Datos_modelo <- Datos %>% dplyr::select(-c("codigo","tiempo_evento_bx_5años","tiempo_evento_bx_2",
+Datos_modelo <- Datos %>% dplyr::select(-c("codigo","tiempo_supervivencia_dias","tiempo_evento_bx_2",
                                            "edad_cat","edad.cat2","estrato","educacion",
                                            "tipo_histologico","grado_histologico",
                                            "estadio","estadio_cat","estadio.Early_late",
@@ -671,6 +691,10 @@ Datos_modelo <- Datos %>% dplyr::select(-c("codigo","tiempo_evento_bx_5años","t
                                            "fecha_dx","Año.dx","Cuartil_fecha.dx","tiempo_supervivencia_años",
                                            "fecha_dx_paciente","fecha_bx","años_supervivencia_dx","años_supervivencia_bx",
                                            "tiempo_supervivencia_5_años_dx","PD.L1","Área.ocupada.por.los.TILs.estromales...total"))
+
+
+
+##------------------------------------
 
 # Estas son las variables que vamos a incluir en el modelo,Ahora con métodos de 
 # selección de variables elegiremos las variables que son significativas para el modelo.
@@ -684,25 +708,29 @@ Datos_modelo <- na.omit(Datos_modelo)
 Datos_modelo %>% dim()
 Datos %>% dim
 
-modelo.cox <- coxph(Surv(tiempo_supervivencia_dias,estado_vital_5años == 1) ~. ,
+modelo.cox <- coxph(Surv(tiempo_evento_bx_5años,estado_vital_5años == 1) ~. ,
                        data = Datos_modelo)
 summary(modelo.cox) 
 
 # Selección hacia atrás usando el criterio AIC
 
 modelo_cox_back <- step(modelo.cox, direction = "backward")
-summary(modelo_cox_back$coefficients)
+
+summary(modelo_cox_back)
+AIC(modelo_cox_back)
 
 # Selección hacia adelante
-modelo_cox_forward <- step(coxph(Surv(tiempo_supervivencia_dias,estado_vital_5años == 1) ~ 1, data = Datos_modelo), 
+modelo_cox_forward <- step(coxph(Surv(tiempo_evento_bx_5años,estado_vital_5años == 1) ~ 1, data = Datos_modelo), 
                            direction = "forward", 
-                           scope = formula(coxph(Surv(tiempo_supervivencia_dias,estado_vital_5años == 1) ~ ., data = Datos_modelo)))
+                           scope = formula(coxph(Surv(tiempo_evento_bx_5años,estado_vital_5años == 1) ~ ., data = Datos_modelo)))
 summary(modelo_cox_forward)
+AIC(modelo_cox_forward)
 
 
+# Primeras observaciones: el modelo seleccionado por el método backware es un modelo
+# mas variables significativas que el modelo por el método de forward ademas presenta un
+# menor AIC por lo que en principio nos quedaremos con este modelo.
 
-library(glmnet)
 
-# Ajustar el modelo de Cox con Lasso (alpha = 1 para Lasso, alpha = 0 para Ridge)
-modelo_lasso <- cv.glmnet(x, y, family = "cox", alpha = 1)
-plot(modelo_lasso)
+Datos%>% dim()
+Datos_modelo %>% names()

@@ -21,7 +21,12 @@ library(viridis)
 library(visdat)
 
 library(survival)
-
+library(ggfortify)
+library(fastcox)
+library(glmpath)
+library(KMsurv)
+library(survMisc)
+library(survminer)
 ```
 
 ```{r}
@@ -77,7 +82,11 @@ datos %>% count(estado_vital_5anos) %>% kable(align = 'cc')
 Observamos que el numero de observaciones por muerte de cáncer de mama es bajo en comparación al numero de censuras es de 260.
 
 ```{r}
-#| include: false
+datos %>% 
+```
+
+```{r}
+#| echo: false
 sapply(datos, function(x) sum(is.na(x)))
 ```
 
@@ -86,13 +95,51 @@ stats::chisq.test(datos$estado_vital_5anos, datos$afiliacion)
 ```
 
 ```{r}
-cancer.km <- survfit(Surv(tiempo_supervivencia_dias,estado_vital_5anos) ~ 1, 
+cancer.km <- survfit(Surv(tiempo_evento_bx_5anos,estado_vital_5anos) ~ estadio_cat3
+                     ,data = datos, type = "kaplan-meier")
+
+
+cancer.km1 <- survfit(Surv(tiempo_supervivencia_dias,estado_vital_5anos) ~ 1, 
                      data = datos, type = "kaplan-meier")
+
 
 summary(cancer.km)
 ```
 
 ```{r}
-coxph(Surv(tiempo_supervivencia_dias,estado_vital_5anos) ~ edad+eur+nam+afr+afiliacion, 
-      data = datos)
+ggsurvplot(fit = cancer.km, data = datos, conf.int = T, 
+           title = "Curva de Supervivencia", 
+           xlab = "Tiempo", ylab = "Probabilidad de supervivencia",
+           theme_bw)
+
+
+ggsurvplot(fit = cancer.km1, data = datos, conf.int = T, 
+           title = "Curva de Supervivencia", 
+           xlab = "Tiempo", ylab = "Probabilidad de supervivencia", 
+           legend.title = "Estimación", 
+           legend.labs = "Kaplan-Meier")
 ```
+
+```{r}
+survdiff(Surv(tiempo_evento_bx_5anos,estado_vital_5anos) ~estadio_cat3, 
+         data = datos, rho = 0) 
+```
+
+```{r}
+coxph(Surv(tiempo_evento_bx_5anos,estado_vital_5anos) ~ edad+afiliacion+ciudad+eur+afr+nam+pr+estadio_cat, data = datos)
+```
+
+```{r}
+cocktail(lambda = 1)
+```
+
+```{r}
+tabla <- table(factor(datos$estado_vital_5anos), factor(datos$ciudad))
+tabla
+```
+
+```{r}
+cor(datos)
+```
+
+}

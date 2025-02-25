@@ -48,13 +48,16 @@ datos$n %<>% as.factor()
 datos$m %<>% as.factor()
 datos$estadio %<>% as.factor()
 datos$estadio_cat %<>% as.factor()
+datos$estadio_cat3 %<>% as.factor()
 datos$er %<>% as.factor()
 datos$pr %<>% as.factor()
 datos$her2 %<>% as.factor()
 datos$recaidas %<>% as.factor()
 datos$subtipo_molecular_definitivo %<>% as.factor()
 datos$interaccion_reg_stage %<>% as.factor()
-
+datos$t %<>% as.factor()
+datos$n %<>% as.factor()
+datos$m %<>% as.factor()
 
 
 ```
@@ -212,8 +215,13 @@ stats::fisher.test(datos$pd_l1, datos$pr) # significativo
 stats::fisher.test(datos$pd_l1, datos$her2)
 stats::fisher.test(datos$pd_l1, datos$recaidas)
 stats::fisher.test(datos$pd_l1, datos$estadio)
+stats::fisher.test(datos$pd_l1, datos$estadio_cat)
+stats::fisher.test(datos$pd_l1, datos$estadio_cat3)
 stats::fisher.test(pdl1$pd_l1, pdl1$subtipo_molecular_definitivo) # Significativo
 stats::fisher.test(pdl1$pd_l1, pdl1$interaccion_reg_stage)
+stats::fisher.test(pdl1$pd_l1, pdl1$t) # Significativa
+stats::fisher.test(pdl1$pd_l1, pdl1$n)
+stats::fisher.test(pdl1$pd_l1, pdl1$m)
 ```
 
 ```{r}
@@ -223,6 +231,7 @@ CramerV(pdl1$pd_l1, pdl1$grado_histologico)
 CramerV(pdl1$pd_l1, pdl1$er)
 CramerV(pdl1$pd_l1, pdl1$pr)
 CramerV(pdl1$pd_l1, pdl1$subtipo_molecular_definitivo)
+CramerV(pdl1$pd_l1, pdl1$t)
 ```
 
 Mediante la prueba de independencia de Fisher, identificaremos las variables que presentan una asociación significativa con la variable PD-L1.

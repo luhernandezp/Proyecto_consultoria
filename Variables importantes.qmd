@@ -1,0 +1,492 @@
+---
+title: "Identificación de variables importantes y redundantes"
+format: pdf
+editor: visual
+lang: es
+execute:
+  warning: false
+  cache: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: paquetes
+#| echo: false
+
+require(magrittr)
+require(readxl)
+require(tidyverse)
+require(ggplot2)
+require(vcd)
+require(corrplot)
+require(RColorBrewer)
+require(openxlsx)
+library(reshape2)
+require(plotly)
+library(survival)
+library(survminer)
+library(ISwR)
+library(ggfortify)
+```
+
+```{r}
+#| label: Lectura de la base de datos
+#| echo: false
+
+Datos <- read_excel("BDD.Análisis_PD-L1_26-09-2024.xlsx",sheet = "BD_330")
+
+Datos$codigo <- as.factor(Datos$codigo)
+Datos$estado_vital_5años <- as.factor(Datos$estado_vital_5años)
+Datos$estado_vital_2 <- as.factor(Datos$estado_vital_2)
+Datos$ciudad <- as.factor(Datos$ciudad)
+Datos$edad_cat <- as.factor(Datos$edad_cat)
+Datos$`edad-cat2` <- as.factor(Datos$`edad-cat2`)
+Datos$estrato <- as.factor(Datos$estrato)
+Datos$estrato_cat <- as.factor(Datos$estrato_cat)
+Datos$educacion <- as.factor(Datos$educacion)
+Datos$educacion_cat <- as.factor(Datos$educacion_cat)
+Datos$afiliacion <- as.factor(Datos$afiliacion)
+Datos$lateralidad_cat <- as.factor(Datos$lateralidad_cat)
+Datos$tipo_histologico <- as.factor(Datos$tipo_histologico)
+Datos$tipo_histol_cat <- as.factor(Datos$tipo_histol_cat)
+Datos$grado_histologico <- as.factor(Datos$grado_histologico)
+Datos$grado_nuclear <- as.factor(Datos$grado_nuclear)
+Datos$`gh/gn` <- as.factor(Datos$`gh/gn`)
+Datos$T <- as.factor(Datos$T)
+Datos$N <- as.factor(Datos$N)
+Datos$M <- as.factor(Datos$M)
+Datos$estadio <- as.factor(Datos$estadio)
+Datos$estadio_cat <- as.factor(Datos$estadio_cat)
+Datos$estadio_cat3 <- as.factor(Datos$estadio_cat3)
+Datos$`estadio-Early_late` <- as.factor(Datos$`estadio-Early_late`)
+Datos$ER <- as.factor(Datos$ER)
+Datos$PR <- as.factor(Datos$PR)
+Datos$HER2 <- as.factor(Datos$HER2)
+Datos$subtipo_molecular_definitivo <- as.factor(Datos$subtipo_molecular_definitivo)
+Datos$EUR_cat <- as.factor(Datos$EUR_cat)
+Datos$NAM_cat <- as.factor(Datos$NAM_cat)
+Datos$AFR_cat <- as.factor(Datos$AFR_cat)
+Datos$recaidas <- as.factor(Datos$recaidas)
+Datos$`Año dx` <- as.factor(Datos$`Año dx`)
+Datos$`Cuartil_fecha dx` <- as.factor(Datos$`Cuartil_fecha dx`)
+Datos$`PD-L1` <- as.factor(Datos$`PD-L1`)
+Datos$`Interacción_Reg/stage` <- as.factor(Datos$`Interacción_Reg/stage`)
+Datos$codigo <- as.factor(Datos$codigo)
+
+Datos <- data.frame(Datos)
+```
+
+El objetivo de este trabajo es identificar entre todas las variables que tenemos inicialmente cuales se deben considerar de aquí en adelante y cuales variables simplemente no aportan.
+
+# Variables con muchos datos faltantes
+
+```{r}
+#| echo: false
+#| eval: false
+
+Datos %>% apply(2,is.na) %>% apply(2,sum) %>% as.data.frame() %>% filter(.>100) %>% xtable::xtable()
+```
+
+\begin{table}[ht]
+\centering
+\caption{Varibles con mayor número de faltantes} % Título de la tabla
+\label{tab:misssing_Value} % Etiqueta para referenciar la tabla
+\begin{tabular}{|c|c|}
+  \hline
+  \textbf{Variables} & \textbf{Cantidad de faltantes} \\ 
+  \hline
+  Recaídas & 131 \\ 
+  PD-L1 & 191 \\ 
+  Área ocupada por los TILs estromales (total) & 139 \\ 
+  \hline
+\end{tabular}
+\end{table}
+
+En análisis descriptivos anteriores encontramos que las variables con mayor cantidad de datos faltantes son **PD.L1 (191)**, **Área ocupada por los TILs estromales % total** (139), **recaídas** (131), dado que estas variables presentan una gran cantidad de valores faltantes serán removidas de nuestras variables ya que hacer un método de imputación nos llevará a tener grandes sesgos en nuestros análisis futuros y en la construcción de modelos , ademas dejar estas variables también significaría perder una gran cantidad de información de las demás variables.
+
+# Recategorización de variables
+
+En el conjunto de variables tenemos variables que están categorizadas de dos o tres formas diferentes, estas variables son:**edad**,**estrato**,**educación**,**tipo_histologico**,**estadio**,**EUR**,**NAM**,**AFR**, lo que nos interesa saber con que categorización de dichas variables es la que representa mejor la información y así reducir la cantidad de variables de nuestro conjunto.
+
+Para lograr esto vamos a usar el método del log-rank test para saber en que categorización resulta con curvas de supervivencia estadisticamente diferentes en por lo menos dos categorías de la variable.
+
+## La prueba del Log-Rank test
+
+En el análisis de supervivencia, la prueba del Log-Rank test se usa para comparar las curvas de dos o mas grupos. Esta prueba se basa en la hipótesis nula de que no hay diferencia entre las funciones de supervivencia de los grupos comparados.
+
+-   La hipótesis nula ($H_0$): No hay diferencia en las curvas de supervivencia entre los grupos.
+-   La hipótesis alternativa ($H_1$): Al menos un grupo tiene una función de supervivencia diferente.
+
+### Variable edad
+
+```{r}
+#| layout-ncol: 2
+#| echo: false
+#| label: fig-edad
+#| fig-cap: "Curvas de supérvivencia para la variable edad"
+#| fig-subcap: 
+#|   - "edad_cat"
+#|   - "edad_cat2"
+
+cancer.km.edad.cat <- survfit(Surv(tiempo_evento_bx_5años,
+                          estado_vital_5años==1) ~ edad_cat, 
+                     data = Datos, 
+                     type = "kaplan-meier")
+
+
+ggsurvplot(cancer.km.edad.cat, data = Datos,
+           size = 1,                 # change line size
+           palette = 
+             c("#E7B800", "#2E9FDF","#4cee0b","#ee0b27"),# custom color palettes
+           conf.int = FALSE,          # Add confidence interval
+           pval = TRUE, 
+           pval.coord = c(1, 0.75),
+           #risk.table = TRUE,        # Add risk table
+           risk.table.col = "strata",# Risk table color by groups
+           legend.labs = c("<40 años","40-49 años","50-59 años","≥60 años"),
+           legend.title = "Grupos de Edad",# Change legend labels
+           risk.table.height = 0.25, # Useful to change when you have multiple groups
+           ggtheme = theme_bw(),      # Change ggplot2 theme
+           surv.median.line = "hv", alpha=0.7,
+           ylim = c(0.6, 1)
+)
+
+cancer.km.edad.cat2 <- survfit(Surv(tiempo_evento_bx_5años,
+                                   estado_vital_5años==1) ~ edad.cat2, 
+                              data = Datos, 
+                              type = "kaplan-meier")
+
+ggsurvplot(cancer.km.edad.cat2, data = Datos,
+           size = 1,                 # change line size
+           palette = 
+             c("#E7B800", "#2E9FDF","#4cee0b"),# custom color palettes
+           conf.int = FALSE,          # Add confidence interval
+           pval = TRUE, 
+           pval.coord = c(1, 0.75),
+           #risk.table = TRUE,        # Add risk table
+           risk.table.col = "strata",# Risk table color by groups
+           legend.labs = c("<50 años","50-59 años","≥60 años"),
+           legend.title = "Grupos de Edad",# Change legend labels
+           risk.table.height = 0.25, # Useful to change when you have multiple groups
+           ggtheme = theme_bw(),      # Change ggplot2 theme
+           surv.median.line = "hv", alpha=0.7,
+           ylim = c(0.6, 1)
+)
+```
+
+El P-valor de la prueba es el que aparece dentro de la gráfica, para el caso de la variable edad vemos que las categorizaciones planteadas resultan ser iguales estadisticamente en las diferentes categorias de la variable edad por esta razón decidimos trabajar con la variable numérica de edad.
+
+\newpage
+
+### Variable estrato
+
+```{r}
+#| layout-ncol: 2
+#| echo: false
+#| label: fig-estrato
+#| fig-cap: "Curvas de supérvivencia para la variable estrato"
+#| fig-subcap: 
+#|   - "estrato"
+#|   - "estrato_cat"
+
+cancer.km.estrato <- survfit(Surv(tiempo_evento_bx_5años,
+                                 estado_vital_5años==1) ~ estrato, 
+                            data = Datos, 
+                            type = "kaplan-meier")
+
+ggsurvplot(cancer.km.estrato, data = Datos,
+           size = 1,                 # change line size# custom color palettes
+           conf.int = FALSE,          # Add confidence interval
+           pval = TRUE, 
+           pval.coord = c(1, 0.75),
+           #risk.table = TRUE,        # Add risk table
+           risk.table.col = "strata",# Risk table color by groups
+           legend.labs = c("1","2","3","4","5","6"),
+           legend.title = "Grupos de Estratos",# Change legend labels
+           risk.table.height = 0.25, # Useful to change when you have multiple groups
+           ggtheme = theme_bw(),      # Change ggplot2 theme
+           surv.median.line = "hv", alpha=0.7,
+           ylim = c(0.6, 1)
+)
+
+cancer.km.estrato.cat <- survfit(Surv(tiempo_evento_bx_5años,
+                                 estado_vital_5años==1) ~ estrato_cat, 
+                            data = Datos, 
+                            type = "kaplan-meier")
+
+ggsurvplot(cancer.km.estrato.cat, data = Datos,
+           size = 1,                 # change line size# custom color palettes
+           conf.int = FALSE,          # Add confidence interval
+           pval = TRUE, 
+           pval.coord = c(1, 0.75),
+           #risk.table = TRUE,        # Add risk table
+           risk.table.col = "strata",# Risk table color by groups
+           legend.labs = c("Estratos 5-6","Estrato 3-4","Estratos 1-2"),
+           legend.title = "Grupos de Estratos",# Change legend labels
+           risk.table.height = 0.25, # Useful to change when you have multiple groups
+           ggtheme = theme_bw(),      # Change ggplot2 theme
+           surv.median.line = "hv", alpha=0.7,
+           ylim = c(0.6, 1)
+)
+
+```
+
+La categorización presentada en la variable **estrato_cat** parece agrupar mejor la información, ya que su P-valor resulta ser mas significativo, así que trabajaremos con la variable **estrato_cat**.
+
+### Variable tipo_histologico
+
+```{r}
+#| layout-ncol: 2
+#| echo: false
+#| label: fig-histologico
+#| fig-cap: "Curvas de supérvivencia para la variable tipo_histologico"
+#| fig-subcap: 
+#|   - "tipo_histologico"
+#|   - "tipo_histologico_cat"
+
+
+cancer.km.tipo_histoloogico <- survfit(Surv(tiempo_evento_bx_5años,
+                                        estado_vital_5años==1) ~ tipo_histologico, 
+                                   data = Datos, 
+                                   type = "kaplan-meier")
+
+ggsurvplot(cancer.km.tipo_histoloogico, data = Datos,
+           size = 1,                 # change line size# custom color palettes
+           conf.int = FALSE,          # Add confidence interval
+           pval = TRUE, 
+           pval.coord = c(1, 0.75),
+           #risk.table = TRUE,        # Add risk table
+           risk.table.col = "strata",# Risk table color by groups
+           legend.labs = c("Ductal","Ductal in situ","Ductal      infiltrante","Indinferenciado","Infiltrante","Intraductal","Lobulillar in situ","Lobulillarinfiltrante"),
+           legend.title = "Histologico",# Change legend labels
+           risk.table.height = 0.25, # Useful to change when you have multiple groups
+           ggtheme = theme_bw(),      # Change ggplot2 theme
+           surv.median.line = "hv", alpha=0.7,
+           ylim = c(0.6, 1)
+)
+
+
+cancer.km.tipo_histoloogico_cat <- survfit(Surv(tiempo_evento_bx_5años,
+                                            estado_vital_5años==1) ~ tipo_histol_cat, 
+                                       data = Datos, 
+                                       type = "kaplan-meier")
+
+
+ggsurvplot(cancer.km.tipo_histoloogico_cat, data = Datos,
+           size = 1,                 # change line size# custom color palettes
+           conf.int = FALSE,          # Add confidence interval
+           pval = TRUE, 
+           pval.coord = c(1, 0.75),
+           #risk.table = TRUE,        # Add risk table
+           risk.table.col = "strata",# Risk table color by groups
+           legend.labs = c("Ductal","Otros"),
+           legend.title = "Hstologico",# Change legend labels
+           risk.table.height = 0.25, # Useful to change when you have multiple groups
+           ggtheme = theme_bw(),      # Change ggplot2 theme
+           surv.median.line = "hv", alpha=0.7,
+           ylim = c(0.6, 1)
+)
+```
+
+Para el caso de la variable **tipo_histologico** notamos que la variable con muchas categorias es la que resulta ser estadisticamente diferente pero para este caso dado que en la variable **tipo_histologico** tiene muchas categorias lo cual no es factible por tanto ns quedaremos con la variable que tiene solo dos categorias.
+
+\newpage
+
+### Variable estadio
+
+```{r}
+#| layout-ncol: 2
+#| layout-nrow: 2
+#| echo: false
+#| label: fig-estadio
+#| fig-cap: "Curvas de supérvivencia para la variable estadio"
+#| fig-subcap: 
+#|   - "Estadio"
+#|   - "Estadio_cat"
+#|   - "Estadio_cat3"
+#|   - "estadio-Early_late"
+
+cancer.km.estadio <- survfit(Surv(tiempo_evento_bx_5años,
+                                                estado_vital_5años==1) ~ estadio, 
+                                           data = Datos, 
+                                           type = "kaplan-meier")
+
+
+ggsurvplot(cancer.km.estadio, data = Datos,
+           size = 1,                 # change line size# custom color palettes
+           conf.int = FALSE,          # Add confidence interval
+           pval = TRUE, 
+           pval.coord = c(1, 0.75),
+           #risk.table = TRUE,        # Add risk table
+           risk.table.col = "strata",# Risk table color by groups
+           #legend.labs = c("",""),
+           legend.title = "Estadio",# Change legend labels
+           risk.table.height = 0.25, # Useful to change when you have multiple groups
+           ggtheme = theme_bw(),      # Change ggplot2 theme
+           surv.median.line = "hv", alpha=0.7,
+           ylim = c(0.6, 1)
+)
+
+
+cancer.km.estadio_cat <- survfit(Surv(tiempo_evento_bx_5años,
+                                  estado_vital_5años==1) ~ estadio_cat, 
+                             data = Datos, 
+                             type = "kaplan-meier")
+
+
+ggsurvplot(cancer.km.estadio_cat, data = Datos,
+           size = 1,                 # change line size# custom color palettes
+           conf.int = FALSE,          # Add confidence interval
+           pval = TRUE, 
+           pval.coord = c(1, 0.75),
+          # risk.table = TRUE,        # Add risk table
+           risk.table.col = "strata",# Risk table color by groups
+           legend.labs = c("Estadíos 0-IIA"," Estadíos IIB-IV"),
+           legend.title = "Estadio",# Change legend labels
+           risk.table.height = 0.25, # Useful to change when you have multiple groups
+           ggtheme = theme_bw(),      # Change ggplot2 theme
+           surv.median.line = "hv", alpha=0.7,
+           ylim = c(0.4, 1)
+)
+
+
+cancer.km.estadio_cat3 <- survfit(Surv(tiempo_evento_bx_5años,
+                                      estado_vital_5años==1) ~ estadio_cat3, 
+                                 data = Datos, 
+                                 type = "kaplan-meier")
+
+ggsurvplot(cancer.km.estadio_cat3, data = Datos,
+           size = 1,                 # change line size# custom color palettes
+           conf.int = FALSE,          # Add confidence interval
+           pval = TRUE, 
+           pval.coord = c(1, 0.75),
+           #risk.table = FALSE,        # Add risk table
+           risk.table.col = "strata",# Risk table color by groups
+           legend.labs = c("Estadíos 0-IA-IB"," Estadíos IIB-IIIA"," Estadíos IIIB- IIIC- IV"),
+           legend.title = "Estadio",# Change legend labels
+           risk.table.height = 0.25, # Useful to change when you have multiple groups
+           ggtheme = theme_bw(),      # Change ggplot2 theme
+           surv.median.line = "hv", alpha=0.7,
+           ylim = c(0.4, 1)
+)
+
+cancer.km.estadio_Early_late <- survfit(Surv(tiempo_evento_bx_5años,
+                                       estado_vital_5años==1) ~ estadio.Early_late, 
+                                  data = Datos, 
+                                  type = "kaplan-meier")
+
+ggsurvplot(cancer.km.estadio_Early_late, data = Datos,
+           size = 1,                 # change line size# custom color palettes
+           conf.int = FALSE,          # Add confidence interval
+           pval = TRUE, 
+           pval.coord = c(1, 0.75),
+           #risk.table = TRUE,        # Add risk table
+           risk.table.col = "strata",# Risk table color by groups
+           legend.labs = c(" 0 - IA- IIA-IIB","IIIA - IIIB- IIIC- IV"),
+           legend.title = "Estadio",# Change legend labels
+           risk.table.height = 0.25, # Useful to change when you have multiple groups
+           ggtheme = theme_bw(),      # Change ggplot2 theme
+           surv.median.line = "hv", alpha=0.7,
+           ylim = c(0.4, 1)
+)
+```
+
+La variable estadio, es la variable que mas categorizaciones tienen y en cada una de ellas hay al menos dos curvas que son estéticamente diferentes, pero en este caso la variable **estadio_cat3** es la elegida en continuar en el análisis, esta categorización de la variable estadio tiene tres categorias que son las ideales en una variable categórica y ademas cada curva resulta ser estadisticamente diferentes lo que significa que cada categoría tiene información relevante y su supervivencia tiene comportamiento diferente.
+
+\newpage
+
+### Variable componente Ancestral
+
+```{r}
+#| layout: [[1,1], [0.05]]
+#| fig-height: 3
+#| echo: false
+#| label: fig-ComponenteAN
+#| fig-cap: "Curvas de supérvivencia para la variable Componente Ancestral"
+#| fig-subcap: 
+#|   - "Europeo"
+#|   - "Nativo Americano"
+#|   - "Africano"
+
+cancer.km.EUR <- survfit(Surv(tiempo_evento_bx_5años,
+                                       estado_vital_5años==1) ~ EUR_cat, 
+                                  data = Datos, 
+                                  type = "kaplan-meier")
+
+ggsurvplot(cancer.km.EUR, data = Datos,
+           size = 1,                 # change line size# custom color palettes
+           conf.int = FALSE,          # Add confidence interval
+           pval = TRUE, 
+           pval.coord = c(1, 0.75),
+           #risk.table = TRUE,        # Add risk table
+           risk.table.col = "strata",# Risk table color by groups
+           legend.labs = c("<0,4935510","≥0,4935510"),
+           legend.title = "Categorias",# Change legend labels
+           risk.table.height = 0.25, # Useful to change when you have multiple groups
+           ggtheme = theme_bw(),      # Change ggplot2 theme
+           surv.median.line = "hv", alpha=0.7,
+           ylim = c(0.4, 1)
+)
+
+cancer.km.NAM <- survfit(Surv(tiempo_evento_bx_5años,
+                                       estado_vital_5años==1) ~ NAM_cat, 
+                                  data = Datos, 
+                                  type = "kaplan-meier")
+
+ggsurvplot(cancer.km.NAM, data = Datos,
+           size = 1,                 # change line size# custom color palettes
+           conf.int = FALSE,          # Add confidence interval
+           pval = TRUE, 
+           pval.coord = c(1, 0.75),
+           #risk.table = TRUE,        # Add risk table
+           risk.table.col = "strata",# Risk table color by groups
+           legend.labs = c("<0,3201210","≥0,3201210"),
+           legend.title = "Categorias",# Change legend labels
+           risk.table.height = 0.25, # Useful to change when you have multiple groups
+           ggtheme = theme_bw(),      # Change ggplot2 theme
+           surv.median.line = "hv", alpha=0.7,
+           ylim = c(0.4, 1)
+)
+
+
+cancer.km.AFR <- survfit(Surv(tiempo_evento_bx_5años,
+                                       estado_vital_5años==1) ~ AFR_cat, 
+                                  data = Datos, 
+                                  type = "kaplan-meier")
+
+ggsurvplot(cancer.km.AFR, data = Datos,
+           size = 1,                 # change line size# custom color palettes
+           conf.int = FALSE,          # Add confidence interval
+           pval = TRUE, 
+           pval.coord = c(1, 0.75),
+           #risk.table = TRUE,        # Add risk table
+           risk.table.col = "strata",# Risk table color by groups
+           legend.labs = c("<0,1554530","≥0,1554530"),
+           legend.title = "Categorias",# Change legend labels
+           risk.table.height = 0.25, # Useful to change when you have multiple groups
+           ggtheme = theme_bw(),      # Change ggplot2 theme
+           surv.median.line = "hv", alpha=0.7,
+           ylim = c(0.4, 1)
+)
+
+```
+
+Para las variables que miden el componente Ancestral de los pacientes Europeo resulta significativa en las dos categorias, de igual forma para el componente ancestral africano, pero la variable nativo americano resulta ser estadisticamente iguales, por eso decidiremos trabajar con la variable numérica y para las demás usaremos las categóricas.
+
+Con este método logramos identificar con que variable categórica trabajar y cuales hacer a un lado hemos reducido el numero de variables, ahora tratemos de identificar variables que no aportan información útil.
+
+\newpage
+
+Revisaremos las variables restantes de nuestro conjunto de datos y argumentaremos si son relevantes o no.
+
+Dentro de los estudios de análisis de supervivencia es importante la variable que registra si un paciente presentó o no el evento así como también el periodo bajo estudio de los pacientes, en la base de datos tenemos periodos de 2 y 5 años, entre mas tiempo bajo estudio mejor, por este motivo usaremos el periodo de 5 años así que las demás variables que tengan que ver con dos años serán dejadas a un lado, así como también las variables que tienen fechas o años pues ya la variable tiempo de supervivencia la tenemos en días y en años para el caso de a variable grado nuclear y grado histologico segun el diccionario de variables miden lo mismo usaremos grado nuclear ya que tiene menos grados, dicho esto las variables que se van a considerar para la creación de modelos son las siguientes: **estado_vital_5años**,**tiempo_evento_bx_5años**,**ciudad**,**edad**,**estrato_cat**,**educacion_cat**
+,**afiliacion**,**lateralidad_cat**,**tipo_histol_cat**,**grado_nuclear**,**gh.gn**,**T**,**N**,**M**,**estadio_cat3**,
+**ER**,**PR**,**HER2**,**subtipo_molecular_definitivo**,**EUR_cat**,**NAM**,**AFR_cat**,
+**Interacción_Reg.stage**,**PD.L1.TILs.si.no**,**Missing.Clinical.data**.
+
+## Conclusiones
+
+Gracias al análisis descriptivo y  al análisis de supervivencia de nuestro conjunto de datos pudimos identificar que 25 variables entre las 54 que teníamos inicialmente  son  las que se van a considerar para implementación de modelos  que se van a desarrollar.
+
+Como primera opción vamos a considerar la implementación de un modelo de **regresión de riesgos proporcionales de cox** ya que este permite analizar el efecto de múltiples variables explicativas sobre el tiempo hasta la ocurrencia de un evento.

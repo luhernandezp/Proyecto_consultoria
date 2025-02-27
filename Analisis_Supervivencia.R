@@ -67,7 +67,7 @@ cramerV <- function(var1, var2) {
   assocstats(tabla)$cramer
 }
 
-Datos1 <- Datos %>% select_if(is.factor) %>% select(-c('PD-L1','codigo'))
+Datos1 <- Datos %>% select_if(is.factor) %>% select(-c('PD.L1','codigo'))
 
 # Función para crear una matriz de Cramer's V
 cramerV_matrix <- function(data) {
@@ -733,4 +733,5 @@ AIC(modelo_cox_forward)
 
 
 Datos%>% dim()
-Datos_modelo %>% names()
+Datos_modelo %>% names() %>% 
+
